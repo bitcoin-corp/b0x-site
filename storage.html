@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storage · b0-x</title>
+<meta name="description" content="b0-x hosts files in your own bStoreX bucket: S3/R2-compatible storage on our Hetzner servers, paid from your wallet by locking BSV or a monthly subscription. In development.">
+<link rel="canonical" href="https://b0-x.com/storage">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://b0-x.com/storage">
+<meta property="og:site_name" content="b0-x">
+<meta property="og:title" content="Storage · b0-x">
+<meta property="og:description" content="b0-x hosts files in your own bStoreX bucket: S3/R2-compatible storage on our Hetzner servers, paid from your wallet by locking BSV or a monthly subscription. In development.">
+<meta property="og:image" content="https://b0-x.com/og-b0x-v1.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Storage · b0-x">
+<meta name="twitter:description" content="b0-x hosts files in your own bStoreX bucket: S3/R2-compatible storage on our Hetzner servers, paid from your wallet by locking BSV or a monthly subscription. In development.">
+<meta name="twitter:image" content="https://b0-x.com/og-b0x-v1.png">
+<meta name="theme-color" content="#050506">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<!-- Part of bWalletX strip (shared snippet, same on every bWalletX product site; source: bwalletx-site/brand/part-of-bwalletx.html) -->
+<style>
+.bwx-strip{background:#0a0a0b;border-bottom:1px solid rgba(255,210,77,.16);font:500 13px/1 'IBM Plex Sans',system-ui,-apple-system,sans-serif}
+.bwx-strip a{display:flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:0 16px;color:#cfcabd;text-decoration:none;letter-spacing:.01em}
+.bwx-strip svg{width:12px;height:16px;flex:none;display:block}
+.bwx-strip b{color:#ffd24d;font-weight:600}
+.bwx-strip .bwx-go{color:#7c7a73;transition:transform .16s cubic-bezier(.2,.8,.2,1),color .16s}
+.bwx-strip a:hover{color:#f4f1e8}
+.bwx-strip a:hover .bwx-go{color:#ffd24d;transform:translateX(2px)}
+.bwx-strip a:focus-visible{outline:2px solid #ffd24d;outline-offset:-4px;border-radius:8px}
+@media (prefers-reduced-motion:reduce){.bwx-strip .bwx-go{transition:none}}
+</style>
+<aside class="bwx-strip" aria-label="bWalletX"><a href="https://bwalletx.com"><svg viewBox="23 8 74 100" aria-hidden="true" focusable="false"><defs><linearGradient id="bwx-g" gradientUnits="userSpaceOnUse" x1="0" y1="12" x2="0" y2="105"><stop offset="0" stop-color="#FFE58A"/><stop offset=".55" stop-color="#FFD24D"/><stop offset="1" stop-color="#C98F00"/></linearGradient><mask id="bwx-m"><rect width="140" height="140" fill="#fff"/><circle cx="60" cy="72" r="15" fill="#000"/></mask></defs><g fill="url(#bwx-g)" mask="url(#bwx-m)"><polygon points="45,12 45,76 27,76 27,30"/><circle cx="60" cy="72" r="33"/></g></svg><span>Part of <b>bWalletX</b></span><span class="bwx-go" aria-hidden="true">&rarr;</span></a></aside>
+<!-- /Part of bWalletX strip -->
+<div class="ea-bar"><b>Early access</b>b0-x is in development. Nothing on this site is live yet; examples are labelled.</div>
+<header class="wrap nav site">
+  <a class="brand" href="/" aria-label="b0-x home"><img src="/logo.svg" width="20" height="28" alt=""><span>b0<span class="gold">-x</span></span></a>
+  <nav class="links" id="links" aria-label="Main"><a href="/deploy">Deploy</a><a href="/storage" aria-current="page">Storage</a><a href="/publish">Publish</a><a href="/names">Names</a><a href="/pricing">Pricing</a><a href="/docs">Docs</a><a href="/dashboard">Dashboard</a><a href="/about">About</a></nav>
+  <div class="nav-right"><span data-bwx></span><button class="menu-btn" type="button" aria-controls="links" aria-expanded="false" aria-label="Menu">&#9776;</button></div>
+</header>
+<main id="main">
+<section class="page-hero"><div class="wrap">
+<p class="eyebrow">Storage · bStoreX</p><h1 class="h1s">A bucket that<br>belongs to your <span class="gold">key</span>.</h1><p class="lede">Hosting on b0-x sits on bStoreX, the storage layer of the bWalletX family. It runs on our own Hetzner servers and speaks the S3 API, so the tools you already use keep working.</p><span class="tag dev">In development</span></div></section>
+<section><div class="wrap">
+  <div class="three">
+    <div class="card"><h3>Your own bucket</h3><p>Each wallet key gets its own bucket. Deploys write into it; the dashboard reads from it. You can also put anything else in it.</p></div>
+    <div class="card"><h3>S3 / R2 compatible</h3><p>Use the AWS CLI, rclone or any S3 SDK. Credentials are issued to your wallet key and can be revoked from the dashboard.</p></div>
+    <div class="card"><h3>Off chain, by design</h3><p>bStoreX is fast, cheap, normal storage. It's not permanent. Permanence is what <a class="gold" href="/publish">publishing</a> is for.</p></div>
+  </div>
+</div></section>
+<section><div class="wrap split">
+  <div><p class="kicker">API sketch</p><h2>Standard S3 calls.</h2><p style="color:var(--ink2)">The endpoint and key format below are a sketch and will change before launch.</p><span class="tag draft">Draft</span></div>
+  <div style="min-width:0"><pre class="code"><span class="c"># AWS CLI, pointed at bStoreX (sketch)</span>
+export AWS_ACCESS_KEY_ID=bsx_xxxxxxxx
+export AWS_SECRET_ACCESS_KEY=your-secret-here
+aws s3 ls s3://my-sites/ \
+  --endpoint-url https://s3.bstorex.com
+
+aws s3 sync ./out s3://my-sites/my-docs/ \
+  --endpoint-url https://s3.bstorex.com</pre>
+<pre class="code"><span class="c">// JavaScript, @aws-sdk/client-s3 (sketch)</span>
+const s3 = new S3Client({
+  region: 'auto',
+  endpoint: 'https://s3.bstorex.com',
+  credentials: { accessKeyId, secretAccessKey },
+});</pre></div>
+</div></section>
+<section><div class="wrap">
+  <p class="kicker">Paying for it</p><h2>Lock or subscribe.</h2>
+  <div class="grid2">
+    <div class="card"><h3>Lock BSV for a term</h3><p>Lock an amount of BSV in your own wallet for, say, 3 or 12 months. The lock pays for a storage allowance. At the end of the term the BSV unlocks back to you, less the storage fee.</p><p class="small">The coins never leave your wallet's control; the lock is a time-locked output you own.</p></div>
+    <div class="card"><h3>Monthly subscription</h3><p>Or pay a small amount each month straight from your wallet. Stop paying and your bucket is kept read-only for a grace period, then cleared.</p><p class="small">Anything you published on chain is unaffected; it lives on Bitcoin, not in the bucket.</p></div>
+  </div>
+  <h3 style="margin-top:36px">Pricing model</h3>
+  <p style="color:var(--ink2)">Priced by GB stored per month, at or near our cost. Bandwidth for normal sites is included. Final per-GB prices will be published before launch; we won't put a number here until it's real.</p>
+</div></section>
+<section style="border-bottom:0"><div class="wrap"><div class="ctas"><button class="btn gb" type="button" data-ea-connect>Connect bWalletX to join early access</button><a class="btn ghost" href="/pricing">See pricing</a></div>
+<p class="ea-note" data-ea="Connect bWalletX to join early access. Nothing is stored; this just shows you your key." aria-live="polite">Connect bWalletX to join early access. Nothing is stored; this just shows you your key.</p></div></section>
+</main>
+<footer class="site wrap">
+  <div class="fgrid">
+    <div><a class="brand" href="/" style="padding:0;color:var(--ink)"><img src="/logo.svg" width="20" height="28" alt=""><span>b0<span class="gold">-x</span></span></a><p style="margin-top:12px">Vercel and GitHub for developers, on Bitcoin. Early access; in development.</p></div>
+    <div><h4>Product</h4><a href="/deploy">Deploy</a><a href="/storage">Storage</a><a href="/publish">Publish</a><a href="/names">Names</a><a href="/pricing">Pricing</a></div>
+    <div><h4>Developers</h4><a href="/docs">Docs (draft)</a><a href="/dashboard">Example dashboard</a><a href="/about">About</a></div>
+    <div><h4>bWalletX family</h4><a href="https://bwalletx.com">bWalletX</a><a href="https://bstorex.com">bStoreX</a><a href="https://bwebx.com">bWebX</a><a href="https://bmintx.com">bMintX</a><a href="https://b0ase.com">b0ase.com</a></div>
+  </div>
+  <p class="fine">b0-x · part of the bWalletX family · built on bStoreX · publishes with bWebX · runs on Bitcoin SV. The CLI and config shown on this site are sketches of the planned design and may change.</p>
+</footer>
+<script src="https://unpkg.com/@bwalletx/connect@0.5.0/dist/bwalletx-connect.global.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="/bwx.js"></script>
+<script>
+(()=>{const b=document.querySelector('.menu-btn'),l=document.getElementById('links');b.onclick=()=>{const o=l.classList.toggle('open');b.setAttribute('aria-expanded',o)}})();
+
+</script>
+</body>
+</html>

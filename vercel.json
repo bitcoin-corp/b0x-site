@@ -1,0 +1,7 @@
+{
+  "cleanUrls": true,
+  "redirects": [
+    { "source": "/flick-off", "destination": "https://bmintx.com/flick-off", "permanent": false },
+    { "source": "/:path*", "has": [{ "type": "host", "value": "www.b0-x.com" }], "destination": "https://b0-x.com/:path*", "permanent": true }
+  ]
+}
