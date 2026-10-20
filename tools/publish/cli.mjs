@@ -33,7 +33,10 @@ function readKey() {
 async function getJson(url) { const r = await fetch(url); if (!r.ok) throw new Error(`${url} -> ${r.status}`); return r.json() }
 
 async function fetchUtxos() {
-  const list = await getJson(`${WOC}/address/${ADDRESS}/unspent`)
+  // /unspent/all includes unconfirmed change and flags coins already spent in the mempool, so publishing two sites
+  // back to back uses the first one's change instead of double-spending the confirmed coin.
+  const all = await getJson(`${WOC}/address/${ADDRESS}/unspent/all`)
+  const list = (all.result ?? all).filter((u) => !u.isSpentInMempoolTx)
   const out = []
   for (const u of list) {
     if (u.value <= 1) continue // never spend 1-sat outputs (could be ordinals)
