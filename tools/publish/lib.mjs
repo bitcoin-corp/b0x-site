@@ -88,6 +88,8 @@ export function findAbsoluteRefs(files) {
 /** Rewrite "/known-file" and "/" references to relative ones. Returns a new files array. */
 export function rewriteRelative(files) {
   const known = new Set(files.map((f) => f.path))
+  const dirs = new Set()
+  for (const f of files) { let d = posix.dirname(f.path); while (d && d !== '.') { dirs.add(d); d = posix.dirname(d) } }
   return files.map((f) => {
     if (!/\.(html?|css|m?js|svg)$/i.test(f.path)) return f
     const dir = posix.dirname(f.path)
@@ -102,6 +104,9 @@ export function rewriteRelative(files) {
       if (p === '') return pre + (dir === '.' ? './' : rel('') + '/')
       if (known.has(p)) return pre + rel(p)
       if (known.has(p + '.html')) return pre + rel(p + '.html') // Vercel cleanUrls
+      // Paths built in code, e.g. `/thumbs/thumb-${n}.jpg`: rewrite when the folder part is one we publish.
+      const slash = p.lastIndexOf('/', p.includes('${') ? p.indexOf('${') : p.length)
+      if (slash > 0 && dirs.has(p.slice(0, slash))) return pre + rel(p.slice(0, slash)) + p.slice(slash)
       return all
     })
     if (out === s) return f

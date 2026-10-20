@@ -121,3 +121,13 @@ test('signed tx decodes: envelope, content type, data, manifest; EF present', as
   assert.equal(man.mime, 'ord-fs/json')
   assert.deepEqual(JSON.parse(man.data), { 'index.html': `ord://${r.txs[0].txid}_0` })
 })
+
+test('rewrites code-built paths under a published folder', () => {
+  const files = [
+    { path: 'index.html', data: Buffer.from("x.style.background = `url(/thumbs/thumb-${String(i).padStart(2,'0')}.jpg)`; y = '/nope/a.png'"), size: 1 },
+    { path: 'thumbs/thumb-00.jpg', data: Buffer.from('j'), size: 1 },
+  ]
+  const out = rewriteRelative(files)[0].data.toString()
+  assert.ok(out.includes('url(./thumbs/thumb-${'), out)
+  assert.ok(out.includes("'/nope/a.png'"), 'unknown folders are left alone')
+})
