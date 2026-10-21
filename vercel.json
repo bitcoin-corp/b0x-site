@@ -1,7 +1,41 @@
 {
   "cleanUrls": true,
   "redirects": [
-    { "source": "/flick-off", "destination": "https://bmintx.com/flick-off", "permanent": false },
-    { "source": "/:path*", "has": [{ "type": "host", "value": "www.b0-x.com" }], "destination": "https://b0-x.com/:path*", "permanent": true }
+    {
+      "source": "/flick-off",
+      "destination": "https://bmintx.com/flick-off",
+      "permanent": false
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.b0-x.com"
+        }
+      ],
+      "destination": "https://b0-x.com/:path*",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/:rest(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "(?<sub>[a-z0-9-]{1,40})\\.b0-x\\.com"
+        }
+      ],
+      "destination": "/api/s?host=:sub&r=:rest"
+    },
+    {
+      "source": "/s/:rest(.*)",
+      "destination": "/api/s?r=:rest"
+    },
+    {
+      "source": "/s",
+      "destination": "/api/s?r="
+    }
   ]
 }

@@ -6,6 +6,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { resolve, basename, join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PrivateKey, Transaction } from '@bsv/sdk'
+import { appendVersion } from '../../api/_registry.js'
 import { walkSite, findAbsoluteRefs, rewriteRelative, buildChain, listApiFunctions, oversizedFiles } from './lib.mjs'
 
 const ADDRESS = '1Fc3koRkAtw29HpdYwQ784GTzgyqc9QF8j'
@@ -67,7 +68,11 @@ async function broadcast() {
   }
   const url = `https://ordfs.network/content/${plan.dirOutpoint}/`
   writeFileSync(join(outDir, 'receipt.json'), JSON.stringify({ name, address: ADDRESS, directory: plan.dirOutpoint, url, sent }, null, 2))
-  console.log(`\nDone. ${url}`)
+  // Register in the gateway: names.json gets this version appended and set as current.
+  const regPath = join(HERE, '..', '..', 'names.json')
+  const reg = existsSync(regPath) ? JSON.parse(readFileSync(regPath, 'utf8')) : {}
+  writeFileSync(regPath, JSON.stringify(appendVersion(reg, name, plan.dirOutpoint, { source: opt('source') }), null, 2) + '\n')
+  console.log(`\nDone. ${url}\n  names.json: ${name} -> ${plan.dirOutpoint} (commit it; live at https://b0-x.com/s/${name}/ after deploy)`)
 }
 
 async function usdRate() {
