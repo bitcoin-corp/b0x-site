@@ -15,16 +15,31 @@
   .bwx-card{background:#0b0b0c;border:1px solid rgba(255,210,77,.3);border-radius:20px;padding:24px;max-width:360px;width:100%;text-align:center;color:#f4f1e8;font:400 15px/1.5 'IBM Plex Sans',sans-serif}
   .bwx-card h3{font:700 22px 'Space Grotesk';margin:0 0 6px}.bwx-qr{background:#fff;border-radius:12px;padding:12px;margin:14px auto;width:max-content}
   .bwx-code{font:700 30px 'Space Grotesk';letter-spacing:.2em;color:#ffd24d}.bwx-x{margin-top:14px;background:none;border:0;color:#9a968b;cursor:pointer;font-size:14px}
+  .bwx-dash{display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border-radius:999px;background:rgba(255,210,77,.1);border:1px solid rgba(255,210,77,.45);color:#ffd24d;font:600 14px 'Space Grotesk',sans-serif;text-decoration:none}
+  .bwx-dash:hover{border-color:#ffd24d}@media(max-width:520px){.bwx-dash{display:none}}
   .bwx-link{word-break:break-all;font-size:11px;color:#9a968b;background:#000;border-radius:8px;padding:8px;margin-top:8px;cursor:copy}`;
   document.head.appendChild(css);
 
   let key = null;
+  // ?mock=1 is honoured by the API only on localhost outside production (dev preview of the signed-in dashboard).
+  const mockQ = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('mock') === '1' ? '?mock=1' : '';
   // Early access: nothing is stored server-side. Connecting just shows the visitor a note with their short key.
   const note = () => document.querySelectorAll('[data-ea]').forEach((n) => {
     n.textContent = key ? `You're on the early-access list as ${short(key)}.` : n.dataset.ea;
     n.classList.toggle('ea-on', !!key);
   });
-  const draw = () => { note(); slots.forEach((s) => {
+  // Signed-in state everywhere: a gold "Dashboard" pill beside the wallet button, nav link marked, <html data-signed-in>.
+  const signedIn = () => {
+    document.documentElement.toggleAttribute('data-signed-in', !!key);
+    document.querySelectorAll('.links a[href="/dashboard"]').forEach((a) => a.classList.toggle('me', !!key));
+    document.querySelectorAll('.nav-right').forEach((r) => {
+      let pill = r.querySelector('.bwx-dash');
+      if (key && !pill) { pill = document.createElement('a'); pill.className = 'bwx-dash'; pill.href = '/dashboard' + mockQ; pill.textContent = 'Dashboard'; r.prepend(pill); }
+      if (!key && pill) pill.remove();
+    });
+  };
+  const announce = () => document.dispatchEvent(new CustomEvent('b0x-wallet', { detail: { identityKey: key } }));
+  const draw = () => { note(); signedIn(); slots.forEach((s) => {
     s.innerHTML = '';
     const b = document.createElement('button');
     b.type = 'button';
@@ -68,8 +83,9 @@
         },
       });
       const v = await post('/api/bwalletx/verify', { identityKey: r.identityKey, nonce: r.nonce, signature: r.signature, ticket });
-      key = v.identityKey; close(); draw();
-      document.dispatchEvent(new CustomEvent('b0x-wallet', { detail: { identityKey: key } }));
+      key = v.identityKey; close(); draw(); announce();
+      // Signed in: go to the dashboard (pages that render it themselves listen for b0x-wallet instead).
+      if (!document.querySelector('[data-dashboard]')) location.href = '/dashboard';
     } catch (e) {
       if (e && e.code === 'NOT_FOUND') {
         show(`<h3>No bWalletX found</h3><p>Get the bWalletX extension or app, or use the web wallet.</p><p><a class="bwx-btn on" href="https://bwalletx.com/get">Get bWalletX</a></p>`);
@@ -83,9 +99,10 @@
   async function disconnect() {
     await post('/api/bwalletx/session', {}).catch(() => {});
     try { C.clearPairing?.(); } catch {}
-    key = null; draw();
+    key = null; draw(); announce();
   }
-  fetch('/api/bwalletx/session', { credentials: 'same-origin' }).then((r) => r.json()).then((j) => { key = j.identityKey || null; draw(); }).catch(draw);
+  fetch('/api/bwalletx/session' + mockQ, { credentials: 'same-origin' }).then((r) => r.json()).then((j) => { key = j.identityKey || null; draw(); announce(); }).catch(draw);
   document.querySelectorAll('[data-ea-connect]').forEach((b) => { b.onclick = () => (key ? null : connect()); });
+  window.b0xConnect = () => (key ? null : connect());
   draw();
 })();
