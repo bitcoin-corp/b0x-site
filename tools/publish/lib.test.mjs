@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { PrivateKey, Transaction } from '@bsv/sdk'
+const noSlashFix = (t) => t.replace(/<script data-b0x-slash>[\s\S]*?<\/script>/, '')
 import { inscriptionScript, buildDirectory, feeFor, batchFiles, buildChain, rewriteRelative, findAbsoluteRefs } from './lib.mjs'
 
 const key = PrivateKey.fromRandom()
@@ -59,8 +60,8 @@ test('relative rewrite + abs ref detection', () => {
   const kinds = findAbsoluteRefs(files).map((r) => r.kind)
   assert.ok(kinds.includes('root') && kinds.includes('file'))
   const out = rewriteRelative(files)
-  assert.equal(out[0].data.toString(), '<a href="./">h</a><img src="./img/x.webp"><script src="./bwx.js"></script><x data-u="/api/s">')
-  assert.equal(out[1].data.toString(), '<img src="./x.webp"><a href="../">')
+  assert.equal(noSlashFix(out[0].data.toString()), '<a href="./">h</a><img src="./img/x.webp"><script src="./bwx.js"></script><x data-u="/api/s">')
+  assert.equal(noSlashFix(out[1].data.toString()), '<img src="./x.webp"><a href="../">')
 })
 
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
@@ -94,7 +95,7 @@ test('junk skipped, env files never included', () => {
 test('clean urls rewritten, unknown/api left and reported', () => {
   const files = [{ path: 'index.html', mime: 'text/html', data: Buffer.from('<a href="/friends">f</a><x data-u="/api/s">'), size: 0 }, f('friends.html', 1)]
   const out = rewriteRelative(files)
-  assert.equal(out[0].data.toString(), '<a href="./friends.html">f</a><x data-u="/api/s">')
+  assert.equal(noSlashFix(out[0].data.toString()), '<a href="./friends.html">f</a><x data-u="/api/s">')
   assert.deepEqual(findAbsoluteRefs(out).filter((r) => r.kind !== 'unknown').map((r) => r.kind), ['api'])
 })
 
@@ -130,4 +131,16 @@ test('rewrites code-built paths under a published folder', () => {
   const out = rewriteRelative(files)[0].data.toString()
   assert.ok(out.includes('url(./thumbs/thumb-${'), out)
   assert.ok(out.includes("'/nope/a.png'"), 'unknown folders are left alone')
+})
+
+test('html gets the ORDFS double-slash fix, once', () => {
+  const one = rewriteRelative([{ path: 'index.html', data: Buffer.from('<html><head><title>x</title></head></html>'), size: 1 }])[0].data.toString()
+  assert.ok(one.startsWith('<html><head><script data-b0x-slash>'), one)
+  const two = rewriteRelative([{ path: 'index.html', data: Buffer.from(one), size: 1 }])[0].data.toString()
+  assert.equal(two, one)
+  const js = one.match(/<script data-b0x-slash>([\s\S]*?)<\/script>/)[1]
+  let went = null
+  const location = { pathname: '/content/abc_0//index.html', search: '?q', hash: '#h', replace: (u) => { went = u } }
+  new Function('location', js)(location)
+  assert.equal(went, '/content/abc_0/index.html?q#h')
 })

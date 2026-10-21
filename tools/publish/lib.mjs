@@ -109,6 +109,14 @@ export function rewriteRelative(files) {
       if (slash > 0 && dirs.has(p.slice(0, slash))) return pre + rel(p.slice(0, slash)) + p.slice(slash)
       return all
     })
+    // ORDFS redirects a directory to ".../<dir>_0//index.html" (double slash); relative URLs then resolve to
+    // "_0//thumbs/x.jpg", which ORDFS answers with HTML. Tidy the address before anything loads.
+    let fixed = out
+    if (/\.html?$/i.test(f.path) && !fixed.includes('data-b0x-slash')) {
+      const tag = `<script data-b0x-slash>if(/\\/\\/+/.test(location.pathname.slice(1)))location.replace(location.pathname.replace(/\\/{2,}/g,'\\x2f')+location.search+location.hash)</script>`
+      fixed = /<head[^>]*>/i.test(fixed) ? fixed.replace(/<head[^>]*>/i, (h) => h + tag) : tag + fixed
+    }
+    if (fixed !== out) { const data = Buffer.from(fixed, 'utf8'); return { ...f, data, size: data.length } }
     if (out === s) return f
     const data = Buffer.from(out, 'utf8')
     return { ...f, data, size: data.length }
