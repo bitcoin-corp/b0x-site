@@ -4,3 +4,4 @@ node_modules
 .env*
 design-preview/
 tools/publish/out/
+.shots/

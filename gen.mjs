@@ -32,7 +32,7 @@ const EA = 'Connect bWalletX to join early access. Nothing is stored; this just 
 const cta = (extra = '') => `<div class="ctas"><button class="btn gb" type="button" data-ea-connect>Connect bWalletX to join early access</button>${extra}</div>
 <p class="ea-note" data-ea="${EA}" aria-live="polite">${EA}</p>`;
 
-function layout({ path, title, desc, body, script = '' }) {
+function layout({ path, title, desc, body, script = '', tail = '' }) {
   const url = ORIGIN + (path === '/' ? '/' : path);
   const links = NAV.map(([h, t]) => `<a href="${h}"${h === path ? ' aria-current="page"' : ''}>${t}</a>`).join('');
   return `<!doctype html>
@@ -78,7 +78,7 @@ ${body}
   <div class="fgrid">
     <div><a class="brand" href="/" style="padding:0;color:var(--ink)"><img src="/logo.svg" width="20" height="28" alt=""><span>b0<span class="gold">-x</span></span></a><p style="margin-top:12px">Vercel and GitHub for developers, on Bitcoin. Early access; in development.</p></div>
     <div><h4>Product</h4><a href="/deploy">Deploy</a><a href="/storage">Storage</a><a href="/publish">Publish</a><a href="/names">Names</a><a href="/pricing">Pricing</a></div>
-    <div><h4>Developers</h4><a href="/docs">Docs (draft)</a><a href="/dashboard">Example dashboard</a><a href="/about">About</a></div>
+    <div><h4>Developers</h4><a href="/docs">Docs (draft)</a><a href="/dashboard">Dashboard</a><a href="/new">New project</a><a href="/about">About</a></div>
     <div><h4>bWalletX family</h4><a href="https://bwalletx.com">bWalletX</a><a href="https://bstorex.com">bStoreX</a><a href="https://bwebx.com">bWebX</a><a href="https://bmintx.com">bMintX</a><a href="https://b0ase.com">b0ase.com</a></div>
   </div>
   <p class="fine">b0-x · part of the bWalletX family · built on bStoreX · publishes with bWebX · runs on Bitcoin SV. The CLI and config shown on this site are sketches of the planned design and may change.</p>
@@ -90,6 +90,7 @@ ${body}
 (()=>{const b=document.querySelector('.menu-btn'),l=document.getElementById('links');b.onclick=()=>{const o=l.classList.toggle('open');b.setAttribute('aria-expanded',o)}})();
 ${script}
 </script>
+${tail}
 </body>
 </html>
 `;
@@ -426,25 +427,26 @@ $ npx b0-x names point my-site latest</pre>
 </div></div></section>`,
 });
 
+// Real dashboard: rendered client-side by /dash.js from GET /api/me (bWalletX session cookie).
 pages['dashboard'] = layout({
-  path: '/dashboard', title: 'Example dashboard · b0-x',
-  desc: 'An example of the planned b0-x dashboard: projects, hosting, on-chain versions and OpNS names in one wallet. Illustrative data.',
-  body: `${hero('Dashboard', 'One wallet,<br>every <span class="gold">project</span>.', 'This is a design example. The projects, sizes and dates are illustrative; there is no live account behind it.', '<span class="tag ex">Example · not live</span>')}
-<section><div class="wrap">
-  ${dash}
-  <div class="three">
-    <div class="card"><h3>Hosted</h3><p>What's in your bStoreX bucket right now and how long it's paid for.</p></div>
-    <div class="card"><h3>On chain</h3><p>The latest published version of each project, with its manifest and every older version.</p></div>
-    <div class="card"><h3>Name</h3><p>Which OpNS name points where. Move it, or roll back, from here.</p></div>
-  </div>
-  <h3 style="margin-top:40px">Example: a project's versions</h3>
-  <div class="tbl-wrap"><table class="tbl"><caption class="small" style="text-align:left;padding:12px 14px;caption-side:top"><span class="tag ex">Example</span> bvideox.com</caption><thead><tr><th>Version</th><th>Published</th><th class="num">Files</th><th class="num">Size</th><th>Manifest</th><th>Name</th></tr></thead><tbody>
-  <tr><td>v3</td><td>20 Oct 2026</td><td class="num">14</td><td class="num">2.1 MB</td><td class="mono">8f2c…e11a_0</td><td><span class="chip p">bvideox</span></td></tr>
-  <tr><td>v2</td><td>18 Oct 2026</td><td class="num">13</td><td class="num">2.0 MB</td><td class="mono">5d10…a7e4_0</td><td class="small">—</td></tr>
-  <tr><td>v1</td><td>12 Oct 2026</td><td class="num">11</td><td class="num">1.7 MB</td><td class="mono">a0c3…41fe_0</td><td class="small">—</td></tr>
-  </tbody></table></div>
-</div></section>
-<section style="border-bottom:0"><div class="wrap">${cta()}</div></section>`,
+  path: '/dashboard', title: 'Dashboard · b0-x',
+  desc: 'Your b0-x dashboard: the sites you have published on chain, every version, live links and domains. Sign in with bWalletX.',
+  body: `<section class="dsec" data-dashboard><div class="wrap" id="dash-app"><p class="small">Loading…</p><noscript><p>The dashboard needs JavaScript.</p></noscript></div></section>`,
+  script: '', tail: '<script src="/dash.js" defer></script>',
+});
+
+pages['new'] = layout({
+  path: '/new', title: 'New project · b0-x',
+  desc: 'Drop a built site folder to see exactly which files b0-x would publish on chain, any links that would break, and the estimated cost. Nothing is uploaded.',
+  body: `<section class="dsec"><div class="wrap">
+  <div class="dtop"><div><p class="eyebrow"><a href="/dashboard">← Dashboard</a></p><h1 class="h1d">New project</h1></div></div>
+  <p class="lede">Drop your built site folder. b0-x checks it the same way the publisher does: what gets inscribed, what's skipped, which links would break, and what it costs.</p>
+  <label class="ndrop" id="drop" for="pick"><input id="pick" type="file" webkitdirectory directory multiple hidden>
+    <b>Drop a folder here</b><span class="small">or click to choose one · stays in your browser, nothing is uploaded</span></label>
+  <div id="out"></div>
+  <p class="small dnote">Skipped automatically, like the CLI: dotfiles, <code>.env*</code>, <code>node_modules</code>, <code>api/</code>, <code>*.map</code>, <code>*.sql</code>, lockfiles and config at the top level, and <code>.md</code> files nothing links to. Costs are an estimate at 100 sat/kB; the CLI's dry run prints the exact fee before anything is signed.</p>
+</div></section>`,
+  tail: '<script type="module" src="/new.js"></script>',
 });
 
 pages['about'] = layout({

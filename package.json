@@ -9,7 +9,7 @@
   "scripts": {
     "publish-site": "node tools/publish/cli.mjs",
     "test:publish": "node --test tools/publish/lib.test.mjs",
-    "test": "node --test tools/publish/lib.test.mjs test/gateway.test.mjs",
-    "test:gateway": "node --test test/gateway.test.mjs"
+    "test": "node --test tools/publish/lib.test.mjs test/gateway.test.mjs test/dash.test.mjs",
+    "test:gateway": "node --test test/gateway.test.mjs test/dash.test.mjs"
   }
 }

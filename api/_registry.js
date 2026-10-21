@@ -8,6 +8,7 @@
 
 export const NAME_RE = /^[a-z0-9-]{1,40}$/;
 export const OUTPOINT_RE = /^[0-9a-f]{64}_\d{1,6}$/;
+export const PUBKEY_RE = /^0[23][0-9a-f]{64}$/;
 
 export function jsonProvider(registry) {
   return { kind: 'json', async lookup(name) { return Object.hasOwn(registry, name) ? registry[name] : null; } };
@@ -60,11 +61,16 @@ export function mapPath(dirJson, path) {
 }
 
 // Publisher: record a new on-chain version and make it current. Returns a new object.
-export function appendVersion(registry, name, dir, { at = new Date().toISOString(), note, source } = {}) {
+// The owner (identity pubkey hex) is kept across versions; `owner` only sets it when the name has none.
+export function appendVersion(registry, name, dir, { at = new Date().toISOString(), note, source, owner } = {}) {
   if (!NAME_RE.test(name)) throw new Error(`bad name: ${name}`);
   if (!OUTPOINT_RE.test(dir)) throw new Error(`bad outpoint: ${dir}`);
   const prev = registry[name] || { versions: [] };
   const versions = [...prev.versions];
   if (!versions.some((v) => v.dir === dir)) versions.push({ dir, at, note: note || `v${versions.length + 1}` });
-  return { ...registry, [name]: { ...prev, current: dir, versions, source: source || prev.source || name } };
+  if (owner !== undefined && !PUBKEY_RE.test(owner)) throw new Error(`bad owner pubkey: ${owner}`);
+  if (owner && prev.owner && prev.owner !== owner) throw new Error(`${name} is already owned by ${prev.owner.slice(0, 10)}…`);
+  const next = { ...prev, current: dir, versions, source: source || prev.source || name };
+  if (prev.owner || owner) next.owner = prev.owner || owner;
+  return { ...registry, [name]: next };
 }
