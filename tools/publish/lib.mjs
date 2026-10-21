@@ -1,35 +1,10 @@
 // Core logic for publishing a static site as 1Sat ordinal inscriptions + an ORDFS directory.
 // Pure functions (no network) so they can be unit-tested.
 import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join, relative, posix, extname } from 'node:path'
+import { join, relative, posix } from 'node:path'
 import { Transaction, P2PKH, Script, OP, SatoshisPerKilobyte } from '@bsv/sdk'
-
-export const MIME = {
-  '.html': 'text/html;charset=utf-8', '.htm': 'text/html;charset=utf-8',
-  '.css': 'text/css;charset=utf-8', '.js': 'application/javascript', '.mjs': 'application/javascript',
-  '.json': 'application/json', '.txt': 'text/plain;charset=utf-8', '.md': 'text/markdown;charset=utf-8',
-  '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
-  '.webp': 'image/webp', '.gif': 'image/gif', '.ico': 'image/x-icon', '.avif': 'image/avif',
-  '.woff': 'font/woff', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.mp4': 'video/mp4',
-  '.webm': 'video/webm', '.mp3': 'audio/mpeg', '.xml': 'application/xml', '.webmanifest': 'application/manifest+json',
-}
-export const mimeFor = (p) => MIME[extname(p).toLowerCase()] || 'application/octet-stream'
-
-const SKIP_DIRS = new Set(['api', 'node_modules', 'design-preview', 'out', 'media-src', 'screenshots', 'migrations', '.git', '.vercel'])
-const SKIP_FILES = new Set(['package.json', 'pnpm-lock.yaml', 'package-lock.json', 'yarn.lock', 'vercel.json', 'tsconfig.json'])
-const SKIP_EXT = /\.(map|sql)$/i
-
-/** .env, .env.local, prod.env, x.env.bak ... never published, at any depth. */
-export const isEnvFile = (name) => /^\.env/i.test(name) || /\.env(\.|$)/i.test(name)
-
-/** True if a directory entry should never be published. */
-export function isJunk(name, isDir, atRoot = false) {
-  if (isEnvFile(name)) return true
-  if (name.startsWith('.')) return true // .git, .vercel, .DS_Store, other dotfiles
-  if (isDir) return SKIP_DIRS.has(name)
-  if (SKIP_EXT.test(name)) return true
-  return atRoot && SKIP_FILES.has(name)
-}
+import { MIME, mimeFor, isEnvFile, isJunk, dropUnlinkedMd, findAbsoluteRefs as findRefs } from '../../publish-rules.js'
+export { MIME, mimeFor, isEnvFile, isJunk }
 
 /** List serverless functions under <root>/api (not publishable; reported only). */
 export function listApiFunctions(root) {
@@ -45,7 +20,6 @@ export function listApiFunctions(root) {
   walk(join(root, 'api'))
   return out
 }
-const TEXTUAL = /\.(html?|css|m?js|svg|json|txt|md|xml|webmanifest)$/i
 
 /** Walk a site directory and return [{ path, size, mime, data }] (posix relative paths). */
 export function walkSite(root) {
@@ -62,28 +36,11 @@ export function walkSite(root) {
   }
   walk(root)
   // *.md only when linked from some other textual file
-  const text = out.filter((f) => TEXTUAL.test(f.path) && !f.path.endsWith('.md')).map((f) => f.data.toString('utf8')).join('\n')
-  return out.filter((f) => !f.path.toLowerCase().endsWith('.md') || text.includes(f.path) )
+  return dropUnlinkedMd(out, (f) => f.data.toString('utf8'))
 }
 
 /** Find root-absolute references ("/x") in textual files. Returns [{ file, ref, kind }]. */
-export function findAbsoluteRefs(files) {
-  const known = new Set(files.map((f) => f.path))
-  const res = []
-  const re = /(?:(?:src|href|action|poster|content)\s*=\s*["']|url\(\s*["']?|fetch\(\s*["'`]|["'`])(\/(?!\/)[^"'`)\s?#]*)/g
-  for (const f of files) {
-    if (!/\.(html?|css|m?js|svg)$/i.test(f.path)) continue
-    const s = f.data.toString('utf8')
-    for (const m of s.matchAll(re)) {
-      const ref = m[1]
-      const p = ref.slice(1)
-      const kind = ref === '/' ? 'root' : known.has(p) ? 'file' : known.has(p + '.html') ? 'clean' : p.startsWith('api/') ? 'api' : 'unknown'
-      if (kind === 'unknown' && !/\.[a-z0-9]+$/i.test(p) && !p.includes('/')) continue // likely not a path
-      res.push({ file: f.path, ref, kind })
-    }
-  }
-  return res
-}
+export const findAbsoluteRefs = (files) => findRefs(files, (f) => f.data.toString('utf8'))
 
 /** Rewrite "/known-file" and "/" references to relative ones. Returns a new files array. */
 export function rewriteRelative(files) {

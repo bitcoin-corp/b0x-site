@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// pnpm publish-site <dir> [--name x] [--fee 100] [--relative] [--max-tx-mb 9.5] [--broadcast]
+// pnpm publish-site <dir> [--name x] [--owner <identity pubkey hex, new names only>] [--fee 100] [--relative] [--max-tx-mb 9.5] [--broadcast]
 // Dry run by default: builds + signs txs locally, writes them to out/<name>/, never broadcasts.
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs'
@@ -16,13 +16,14 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const argv = process.argv.slice(2).filter((a) => a !== '--')
 const flag = (n) => argv.includes(`--${n}`)
 const opt = (n, d) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : d }
-const dir = argv.find((a, i) => !a.startsWith('--') && !['--name', '--fee', '--max-tx-mb'].includes(argv[i - 1]))
+const dir = argv.find((a, i) => !a.startsWith('--') && !['--name', '--fee', '--max-tx-mb', '--owner', '--source'].includes(argv[i - 1]))
 if (!dir) { console.error('usage: pnpm publish-site <dir> [--name x] [--fee 100] [--relative] [--broadcast]'); process.exit(1) }
 const root = resolve(dir)
 const name = opt('name', basename(root).replace(/-site$/, ''))
 const satPerKb = Number(opt('fee', 100))
 const maxBytes = Math.floor(Number(opt('max-tx-mb', 9.5)) * 1e6)
 const outDir = join(HERE, 'out', name)
+if (opt('owner') !== undefined && !/^0[23][0-9a-f]{64}$/.test(opt('owner'))) { console.error('--owner must be a compressed identity pubkey (66 hex chars)'); process.exit(1) }
 const BSV = (s) => (s / 1e8).toFixed(8)
 
 function readKey() {
@@ -71,7 +72,7 @@ async function broadcast() {
   // Register in the gateway: names.json gets this version appended and set as current.
   const regPath = join(HERE, '..', '..', 'names.json')
   const reg = existsSync(regPath) ? JSON.parse(readFileSync(regPath, 'utf8')) : {}
-  writeFileSync(regPath, JSON.stringify(appendVersion(reg, name, plan.dirOutpoint, { source: opt('source') }), null, 2) + '\n')
+  writeFileSync(regPath, JSON.stringify(appendVersion(reg, name, plan.dirOutpoint, { source: opt('source'), owner: opt('owner') }), null, 2) + '\n')
   console.log(`\nDone. ${url}\n  names.json: ${name} -> ${plan.dirOutpoint} (commit it; live at https://b0-x.com/s/${name}/ after deploy)`)
 }
 
