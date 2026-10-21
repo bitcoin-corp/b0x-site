@@ -1,18 +1,23 @@
 {
   "bfriendsx": {
-    "current": "d2dbc513cbcc8de6f3c90581f8d3f5ed77af4403d2153f4e477d9f629187a111_0",
+    "current": "2f45c498227d5d8bb30a819298708b3f17b6e314667809caff4c9cbb380117c3_0",
     "versions": [
       {
         "dir": "d2dbc513cbcc8de6f3c90581f8d3f5ed77af4403d2153f4e477d9f629187a111_0",
         "at": "2026-10-20T23:48:24.002Z",
         "note": "v1"
+      },
+      {
+        "dir": "2f45c498227d5d8bb30a819298708b3f17b6e314667809caff4c9cbb380117c3_0",
+        "at": "2026-10-21T00:52:40.025Z",
+        "note": "v2"
       }
     ],
     "source": "bfriendsx.com",
     "owner": "0266c15007dfb8c02f90b41abe671d207db317ab3974c1dc012705afc857917c83"
   },
   "bvideox": {
-    "current": "6055ee87285ed6fac215d98e32168726fa8dda7f338e3fc269bdae4379b610b0_0",
+    "current": "ededbb57fb7163d2a376b4c3c2df35c2c1bd17c5939310bddb3981a7252c30f1_0",
     "versions": [
       {
         "dir": "000d947326a909be38289a8f0781c2cd046263f1b0ed3c4fef99f0f9fd634317_0",
@@ -23,6 +28,11 @@
         "dir": "6055ee87285ed6fac215d98e32168726fa8dda7f338e3fc269bdae4379b610b0_0",
         "at": "2026-10-20T23:55:14.755Z",
         "note": "v2"
+      },
+      {
+        "dir": "ededbb57fb7163d2a376b4c3c2df35c2c1bd17c5939310bddb3981a7252c30f1_0",
+        "at": "2026-10-21T00:52:27.478Z",
+        "note": "v3"
       }
     ],
     "source": "bvideox.com",
