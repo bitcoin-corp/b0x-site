@@ -1,0 +1,17 @@
+{
+  "bfriendsx": {
+    "current": "d2dbc513cbcc8de6f3c90581f8d3f5ed77af4403d2153f4e477d9f629187a111_0",
+    "versions": [
+      { "dir": "d2dbc513cbcc8de6f3c90581f8d3f5ed77af4403d2153f4e477d9f629187a111_0", "at": "2026-10-20T23:48:24.002Z", "note": "v1" }
+    ],
+    "source": "bfriendsx.com"
+  },
+  "bvideox": {
+    "current": "6055ee87285ed6fac215d98e32168726fa8dda7f338e3fc269bdae4379b610b0_0",
+    "versions": [
+      { "dir": "000d947326a909be38289a8f0781c2cd046263f1b0ed3c4fef99f0f9fd634317_0", "at": "2026-10-20T23:49:03.322Z", "note": "v1" },
+      { "dir": "6055ee87285ed6fac215d98e32168726fa8dda7f338e3fc269bdae4379b610b0_0", "at": "2026-10-20T23:55:14.755Z", "note": "v2" }
+    ],
+    "source": "bvideox.com"
+  }
+}

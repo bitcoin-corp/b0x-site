@@ -5,5 +5,11 @@
   "dependencies": {
     "@bsv/sdk": "2.8.10",
     "@bwalletx/connect": "0.5.0"
+  },
+  "scripts": {
+    "publish-site": "node tools/publish/cli.mjs",
+    "test:publish": "node --test tools/publish/lib.test.mjs",
+    "test": "node --test tools/publish/lib.test.mjs test/gateway.test.mjs",
+    "test:gateway": "node --test test/gateway.test.mjs"
   }
 }
