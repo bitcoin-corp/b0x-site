@@ -1,11 +1,11 @@
 // Builds the static pages of b0-x.com from one layout. Run: node gen.mjs
 // Output: index.html, deploy.html, storage.html, ... (served with cleanUrls on Vercel).
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 
 const ORIGIN = 'https://b0-x.com';
 const OG = `${ORIGIN}/og-b0x-v1.png`;
 const NAV = [
-  ['/deploy', 'Deploy'], ['/storage', 'Storage'], ['/publish', 'Publish'], ['/names', 'Names'],
+  ['/#sites', 'Sites'], ['/deploy', 'Deploy'], ['/storage', 'Storage'], ['/publish', 'Publish'], ['/names', 'Names'],
   ['/pricing', 'Pricing'], ['/docs', 'Docs'], ['/dashboard', 'Dashboard'], ['/about', 'About'],
 ];
 const SAT_PER_KB = 100;
@@ -32,7 +32,7 @@ const EA = 'Connect bWalletX to join early access. Nothing is stored; this just 
 const cta = (extra = '') => `<div class="ctas"><button class="btn gb" type="button" data-ea-connect>Connect bWalletX to join early access</button>${extra}</div>
 <p class="ea-note" data-ea="${EA}" aria-live="polite">${EA}</p>`;
 
-function layout({ path, title, desc, body, script = '', tail = '' }) {
+function layout({ path, title, desc, body, script = '', tail = '', top }) {
   const url = ORIGIN + (path === '/' ? '/' : path);
   const links = NAV.map(([h, t]) => `<a href="${h}"${h === path ? ' aria-current="page"' : ''}>${t}</a>`).join('');
   return `<!doctype html>
@@ -65,12 +65,12 @@ function layout({ path, title, desc, body, script = '', tail = '' }) {
 <body>
 <a class="skip" href="#main">Skip to content</a>
 ${strip}
-<div class="ea-bar"><b>Early access</b>b0-x is in development. Nothing on this site is live yet; examples are labelled.</div>
+${top ? top(links) : `<div class="ea-bar"><b>Early access</b>b0-x is in development. Deploys aren’t open yet; the sites gallery and the on-chain gateway are live. Examples are labelled.</div>
 <header class="wrap nav site">
   <a class="brand" href="/" aria-label="b0-x home"><img src="/logo.svg" width="20" height="28" alt=""><span>b0<span class="gold">-x</span></span></a>
   <nav class="links" id="links" aria-label="Main">${links}</nav>
   <div class="nav-right"><span data-bwx></span><button class="menu-btn" type="button" aria-controls="links" aria-expanded="false" aria-label="Menu">&#9776;</button></div>
-</header>
+</header>`}
 <main id="main">
 ${body}
 </main>
@@ -99,52 +99,81 @@ ${tail}
 const hero = (eyebrow, h, lede, tag = '<span class="tag dev">In development</span>') => `<section class="page-hero"><div class="wrap">
 <p class="eyebrow">${eyebrow}</p><h1 class="h1s">${h}</h1><p class="lede">${lede}</p>${tag}</div></section>`;
 
-// ---------- example dashboard (shared by / and /dashboard) ----------
-const dash = `<div class="dash" role="region" aria-label="Example dashboard">
-  <div class="ex-ribbon"><span class="tag ex">Example</span>Illustrative data, not a live account.</div>
-  <div class="dhead"><b>example-studio · 6 projects</b><span class="small">Storage: 1.8 GB of 5 GB · paid until 20 Jan 2027 (locked BSV)</span></div>
-  <div class="row h"><span>Project</span><span>From</span><span class="hide">Hosted</span><span>On chain</span><span>Name</span></div>
-  <div class="row"><span><b>bvideox.com</b><br><span class="small">static · 2.1 MB</span></span><span class="chip v">Vercel</span><span class="hide chip s">● hosted</span><span class="chip p">v3 · 20 Oct</span><span class="mono">bvideox</span></div>
-  <div class="row"><span><b>bfriendsx.com</b><br><span class="small">static · 1.4 MB</span></span><span class="chip v">Vercel</span><span class="hide chip s">● hosted</span><span class="chip p">v2 · 19 Oct</span><span class="mono">bfriendsx</span></div>
-  <div class="row"><span><b>osinka-kalaso</b><br><span class="small">static · 48 MB</span></span><span class="chip v">GitHub</span><span class="hide chip s">● hosted</span><span class="small">not published</span><span class="mono">—</span></div>
-  <div class="row"><span><b>vexvoid.com</b><br><span class="small">static · 310 MB</span></span><span class="chip v">Vercel</span><span class="hide chip s">● hosted</span><span class="chip p">v1 · 12 Oct</span><span class="mono">vexvoid</span></div>
-  <div class="row"><span><b>ninjapunkgirls.com</b><br><span class="small">Next.js app + database</span></span><span class="chip v">Vercel</span><span class="hide small">stays on Vercel</span><span class="small">front page only</span><span class="mono">npg</span></div>
-  <div class="row"><span><b>bmintx.com</b><br><span class="small">static + 6 functions</span></span><span class="chip v">Vercel</span><span class="hide small">functions stay on Vercel</span><span class="chip p">v7 · 20 Oct</span><span class="mono">bmintx</span></div>
-</div>`;
+// ---------- home: every b*X site in a coverflow, then the shelf (laid out like bmusicx.com) ----------
+// Data: sites.json (audited stage per site; /api/sites refreshes it live) + names.json (on-chain versions).
+const SITES = JSON.parse(readFileSync(new URL('./sites.json', import.meta.url), 'utf8'));
+const REG = JSON.parse(readFileSync(new URL('./names.json', import.meta.url), 'utf8'));
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const chainBy = Object.fromEntries(Object.entries(REG).filter(([, v]) => v.source).map(([name, v]) => [v.source, { name, v: v.versions.length }]));
+const RANK = { live: 1, soon: 2, sale: 3, down: 4 };
+const FIRST = 'bwalletx.com'; // the carousel opens on bWalletX
+const gallery = SITES.sites
+  .map((s) => { const slug = s.domain.replace(/\.com$/, ''); return { ...s, slug, chain: chainBy[s.domain] || null, shot: existsSync(new URL(`./img/sites/${slug}.webp`, import.meta.url)) }; })
+  .sort((a, b) => (b.domain === FIRST) - (a.domain === FIRST) || (!!b.chain - !!a.chain) || RANK[a.stage] - RANK[b.stage] || a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
+const groupOf = (s) => (s.stage === 'live' || s.stage === 'soon' ? s.stage : 'out');
+const STAGE = { live: 'Live', soon: 'Placeholder', sale: 'For sale', down: 'Not responding' };
+const STAGE_LINE = { live: '', soon: 'Holding page. The site isn’t built yet.', sale: 'The domain is for sale.', down: 'Doesn’t respond yet.' };
+const B = '<svg class="hx-b" viewBox="23 8 74 100" aria-hidden="true" focusable="false"><path fill="currentColor" d="M45 12V72H27V30Z M27 72a33 33 0 1 1 66 0a33 33 0 1 1-66 0Z M45 72a15 15 0 1 0 30 0a15 15 0 1 0-30 0Z"/></svg>';
+const mark = (s) => (s.name[0] === 'b' ? `${B}<span class="sr">b</span>${esc(s.name.slice(1))}` : esc(s.name));
+const chip = (s) => `<span class="hx-chip st-${s.stage}" data-st>${STAGE[s.stage]}</span>`;
+const chainChip = (s) => (s.chain ? `<span class="hx-chip st-chain">On chain · v${s.chain.v}</span>` : '');
+const shot = (s) => (s.shot ? `<img src="/img/sites/${s.slug}.webp" alt="" width="960" height="600" loading="lazy" decoding="async">` : `<span class="hx-none">${esc(s.domain)}<br>no response</span>`);
+const card = (s, i) => `<div class="hx-card${i ? '' : ' on'}" data-d="${s.domain}" style="--c:${s.color}" role="group" aria-label="${esc(s.name)}"${i ? ' aria-hidden="true"' : ''}><div class="hx-win"><div class="hx-bar"><i></i><i></i><i></i><span>${esc(s.domain)}</span></div><div class="hx-shot">${shot(s)}</div><div class="hx-badges">${chip(s)}${chainChip(s)}</div></div></div>`;
+const tile = (s) => `<a class="hx-tile" href="https://${s.domain}" target="_blank" rel="noopener" data-d="${s.domain}" style="--c:${s.color}"><div class="hx-tshot">${shot(s)}</div><div class="hx-tt"><b>${esc(s.name)}</b><span>${esc(s.line || STAGE_LINE[s.stage])}</span></div><div class="hx-tchips">${chip(s)}${chainChip(s)}</div></a>`;
+const GROUPS = [['live', 'Live', 'Built and serving.'], ['soon', 'Placeholders', 'The domain is up with a holding page. The site isn’t built yet.'], ['out', 'Not live', 'For sale, or not responding.']];
+const count = (f) => gallery.filter((s) => f === 'all' || (f === 'chain' ? s.chain : groupOf(s) === f)).length;
+const FILTERS = [['all', 'All'], ['live', 'Live'], ['chain', 'On chain'], ['soon', 'Placeholders'], ['out', 'Not live']];
+const first = gallery[0];
+const shotDate = new Date(SITES.checked).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const json = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
 
-const termLines = [
-  ['c', '$ npx b0-x deploy'], ['', '→ Connecting bWalletX…'], ['o', '✓ signed in as 03a1…9f2c'],
-  ['', '→ Importing from Vercel: bvideox'], ['', '  build: 14 files · 2.1 MB'],
-  ['', '→ Uploading to bStoreX bucket example-sites'], ['o', '✓ preview at https://bvideox.b0-x.app'],
-  ['', '→ Publish this version on chain? [Y/n]'], ['g', '  y'],
-  ['', '→ Writing website ordinal (14 files + manifest)'], ['', `  cost price: ~${fmt(sats(2150))} sats`],
-  ['o', '✓ v3 inscribed: 8f2c…e11a_0'], ['b', '✓ bvideox → v3 (OpNS)'], ['c', '# illustrative run · done in 41s'],
-];
-const termScript = `(()=>{const cs=[...document.querySelectorAll('.sc')];if(!cs.length||matchMedia('(prefers-reduced-motion: reduce)').matches)return;let k=0;setInterval(()=>{const c=cs[k%cs.length];c.classList.remove('stamp');void c.offsetWidth;c.classList.add('stamp');k+=3},900)})();
-const L=${JSON.stringify(termLines)};const t=document.getElementById('t');let i=0;
-const add=([k,s])=>{const sp=document.createElement('span');if(k)sp.className=k;sp.textContent=s+'\\n';t.appendChild(sp)};
-const step=()=>{if(i>=L.length){setTimeout(()=>{t.textContent='';i=0;step()},3500);return}add(L[i++]);setTimeout(step,i===1?600:420)};
-matchMedia('(prefers-reduced-motion: reduce)').matches?L.forEach(add):step();`;
+const homeTop = (links) => `<header class="hx-top">
+<div class="hx-art" aria-hidden="true"><img class="hx-bg" src="/img/sites-wall.webp" alt="" width="1920" height="900" fetchpriority="high"><div class="hx-blocks"></div><div class="hx-ghost">DEPLOY</div></div>
+<div class="wrap nav site">
+  <a class="brand" href="/" aria-label="b0-x home"><img src="/logo.svg" width="20" height="28" alt=""><span>0-x</span></a>
+  <nav class="links" id="links" aria-label="Main">${links}</nav>
+  <div class="nav-right"><span data-bwx></span><button class="menu-btn" type="button" aria-controls="links" aria-expanded="false" aria-label="Menu">&#9776;</button></div>
+</div>
+<div class="wrap hx-in">
+  <p class="hx-eye">Hosting on Bitcoin · early access</p>
+  <h1 class="hx-h1">${B}<span class="sr">b</span><span class="hx-nm">0-x</span></h1>
+  <p class="hx-lede">Websites on Bitcoin, hosted from your wallet. Here’s every b*X site and where it stands.</p>
+  <div class="ctas"><a class="btn wt" href="#sites">See all ${gallery.length} sites</a><a class="btn ghost" href="/deploy">How deploys work</a><a class="btn gb" href="https://bwalletx.com">Get bWalletX</a></div>
+</div>
+</header>`;
 
 const pages = {};
 
 pages['index'] = layout({
   path: '/', title: 'b0-x · Deploy to Bitcoin',
-  desc: 'Vercel and GitHub for developers, on Bitcoin. Import a project, host it in your own bStoreX bucket, publish any version on chain and name it with OpNS. Early access.',
-  script: termScript,
-  body: `<section class="hero"><div class="wrap hgrid">
-  <div>
-    <p class="eyebrow">b0-x · hosting on Bitcoin · early access</p>
-    <h1>Deploy to<br><em>Bitcoin.</em></h1>
-    <p class="lede">Bring your Vercel or GitHub projects. b0-x will host them in your own bStoreX bucket, paid from your wallet, and publish any version on chain for good, with a name you own.</p>
-    ${cta('<a class="btn ghost" href="/deploy">How deploys work</a>')}
-    <p class="small" style="margin-top:10px">Your key, your sites. No account, no password: sign in with bWalletX.</p>
+  desc: 'Deploy websites to Bitcoin: host from your wallet, publish any version on chain, name it with OpNS. See every b*X site and where it stands. Early access.',
+  top: homeTop,
+  tail: '<script src="/home.js"></script>',
+  body: `<section class="hx-sites" id="sites" aria-roledescription="carousel" aria-label="b*X sites">
+  <p class="hx-kick">Pick a site</p>
+  <div class="hx-filters" role="group" aria-label="Show">${FILTERS.map(([f, t]) => `<button type="button" data-f="${f}" aria-pressed="${f === 'all'}"${count(f) ? '' : ' disabled'}>${t}<b data-fc="${f}">${count(f)}</b></button>`).join('')}</div>
+  <div class="hx-flow" tabindex="0" aria-label="Sites. Use the left and right arrow keys.">
+    ${gallery.map(card).join('\n    ')}
+    <button class="hx-arrow prev" type="button" aria-label="Previous site">&larr;</button>
+    <button class="hx-arrow next" type="button" aria-label="Next site">&rarr;</button>
   </div>
-  <div class="term" aria-label="Illustrative terminal session"><div class="bar"><i></i><i></i><i></i><span>illustrative</span></div><pre id="t" aria-live="off"></pre></div>
-</div>
-<div class="sitestrip" aria-label="Family sites on chain: bFriendsX and bVideoX are live through the gateway, the rest are examples"><div class="sitereel"><div class="sc"><span class="nb" data-net="vc" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bmintx.com</span></div><img src="/img/sites/bmintx.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bmintx.com</b><span class="sc-chip">v7 · on chain ✓</span></div></div><a class="sc live" href="/s/bvideox/" title="Served from chain via the b0-x gateway"><span class="nb" data-net="gh" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bvideox.com</span></div><img src="/img/sites/bvideox.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bvideox.com</b><span class="sc-chip">v2 · on chain ✓</span></div></a><a class="sc live" href="/s/bfriendsx/" title="Served from chain via the b0-x gateway"><span class="nb" data-net="nl" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bfriendsx.com</span></div><img src="/img/sites/bfriendsx.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bfriendsx.com</b><span class="sc-chip">v1 · on chain ✓</span></div></a><div class="sc"><span class="nb" data-net="vc" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bdojox.com</span></div><img src="/img/sites/bdojox.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bdojox.com</b><span class="sc-chip">v4 · on chain ✓</span></div></div><div class="sc"><span class="nb" data-net="gh" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bwalletx.com</span></div><img src="/img/sites/bwalletx.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bwalletx.com</b><span class="sc-chip">v12 · on chain ✓</span></div></div><div class="sc"><span class="nb" data-net="nl" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bchatx.com</span></div><img src="/img/sites/bchatx.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bchatx.com</b><span class="sc-chip">v9 · on chain ✓</span></div></div><div class="sc"><span class="nb" data-net="vc" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>ninjapunkgirls.com</span></div><img src="/img/sites/ninjapunkgirls.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>ninjapunkgirls.com</b><span class="sc-chip">v5 · on chain ✓</span></div></div><div class="sc"><span class="nb" data-net="gh" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>vexvoid.com</span></div><img src="/img/sites/vexvoid.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>vexvoid.com</b><span class="sc-chip">v1 · on chain ✓</span></div></div><div class="sc"><span class="nb" data-net="nl" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bmailx.com</span></div><img src="/img/sites/bmailx.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bmailx.com</b><span class="sc-chip">v2 · on chain ✓</span></div></div><div class="sc"><span class="nb" data-net="vc" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bjobsx.com</span></div><img src="/img/sites/bjobsx.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bjobsx.com</b><span class="sc-chip">v3 · on chain ✓</span></div></div><div class="sc"><span class="nb" data-net="gh" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bmintx.com</span></div><img src="/img/sites/bmintx.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bmintx.com</b><span class="sc-chip">v7 · on chain ✓</span></div></div><a class="sc live" href="/s/bvideox/" title="Served from chain via the b0-x gateway"><span class="nb" data-net="nl" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bvideox.com</span></div><img src="/img/sites/bvideox.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bvideox.com</b><span class="sc-chip">v2 · on chain ✓</span></div></a><a class="sc live" href="/s/bfriendsx/" title="Served from chain via the b0-x gateway"><span class="nb" data-net="vc" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bfriendsx.com</span></div><img src="/img/sites/bfriendsx.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bfriendsx.com</b><span class="sc-chip">v1 · on chain ✓</span></div></a><div class="sc"><span class="nb" data-net="gh" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bdojox.com</span></div><img src="/img/sites/bdojox.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bdojox.com</b><span class="sc-chip">v4 · on chain ✓</span></div></div><div class="sc"><span class="nb" data-net="nl" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bwalletx.com</span></div><img src="/img/sites/bwalletx.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bwalletx.com</b><span class="sc-chip">v12 · on chain ✓</span></div></div><div class="sc"><span class="nb" data-net="vc" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bchatx.com</span></div><img src="/img/sites/bchatx.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bchatx.com</b><span class="sc-chip">v9 · on chain ✓</span></div></div><div class="sc"><span class="nb" data-net="gh" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>ninjapunkgirls.com</span></div><img src="/img/sites/ninjapunkgirls.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>ninjapunkgirls.com</b><span class="sc-chip">v5 · on chain ✓</span></div></div><div class="sc"><span class="nb" data-net="nl" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>vexvoid.com</span></div><img src="/img/sites/vexvoid.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>vexvoid.com</b><span class="sc-chip">v1 · on chain ✓</span></div></div><div class="sc"><span class="nb" data-net="vc" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bmailx.com</span></div><img src="/img/sites/bmailx.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bmailx.com</b><span class="sc-chip">v2 · on chain ✓</span></div></div><div class="sc"><span class="nb" data-net="gh" aria-hidden="true"></span><div class="sc-bar"><i></i><i></i><i></i><span>bjobsx.com</span></div><img src="/img/sites/bjobsx.webp" alt="" loading="lazy" width="480" height="300"><div class="sc-meta"><b>bjobsx.com</b><span class="sc-chip">v3 · on chain ✓</span></div></div></div></div>
-<p class="wrap small" style="margin:14px auto 0">Example: our own sites, as they would look published. Versions shown are illustrative.</p>
+  <div class="hx-info" aria-live="polite" style="--c:${first.color}">
+    <h2 class="hx-name">${mark(first)}</h2>
+    <p class="hx-line">${esc(first.line || STAGE_LINE[first.stage])}</p>
+    <div class="hx-meta">${chip(first)}${chainChip(first)}<span class="hx-chip hx-dom">${esc(first.domain)}</span></div>
+    <div class="hx-plays"><a class="btn gb hx-visit" href="https://${first.domain}" target="_blank" rel="noopener">Visit ${esc(first.domain)} ↗</a>${first.chain ? `<a class="btn ghost hx-chain" href="/s/${first.chain.name}/">Open on chain · v${first.chain.v}</a>` : '<a class="btn ghost hx-chain" hidden></a>'}</div>
+    <p class="hx-count" data-count>1 / ${gallery.length}</p>
+  </div>
 </section>
+
+<section class="hx-shelf"><div class="wrap">
+  ${GROUPS.map(([g, h, sub]) => `<div class="hx-group" data-group="${g}"${count(g) ? '' : ' hidden'}>
+    <div class="hx-gh"><h2>${h}</h2><span><b data-gc="${g}">${count(g)}</b> sites</span></div>
+    <p class="hx-gsub">${sub}</p>
+    <div class="hx-grid">${gallery.filter((s) => groupOf(s) === g).map(tile).join('')}</div>
+  </div>`).join('\n  ')}
+  <p class="small hx-note"><span data-checked>Status as checked ${shotDate}</span>. Screenshots taken ${shotDate}.</p>
+</div></section>
 
 <section><div class="wrap">
   <p class="kicker">How it will work</p>
@@ -152,17 +181,9 @@ pages['index'] = layout({
   <div class="three" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
     <div class="card"><span class="n">1</span><h3>Import</h3><p>Connect Vercel or GitHub and pick a project. Static sites, docs and landing pages are the first target.</p><p><a class="gold" href="/deploy">Deploy →</a></p></div>
     <div class="card"><span class="n">2</span><h3>Host on bStoreX</h3><p>Files go into your own bStoreX bucket on our Hetzner servers. Pay by locking BSV for a term, or monthly from your wallet.</p><p><a class="gold" href="/storage">Storage →</a></p></div>
-    <div class="card"><span class="n">3</span><h3>Publish on chain</h3><p>Any version can be written to Bitcoin as a website ordinal: an ORDFS directory, each file its own inscription.</p><p><a class="gold" href="/publish">Publish →</a></p></div>
+    <div class="card"><span class="n">3</span><h3>Publish on chain</h3><p>Any version can be written to Bitcoin as a website ordinal: an ORDFS directory, each file its own inscription. ${gallery.filter((s) => s.chain).map((s) => s.name).join(' and ')} already are.</p><p><a class="gold" href="/publish">Publish →</a></p></div>
     <div class="card"><span class="n">4</span><h3>Name it</h3><p>An OpNS name you own points at your latest version. Ship a new version, move the name.</p><p><a class="gold" href="/names">Names →</a></p></div>
   </div>
-</div></section>
-
-<section><div class="wrap">
-  <p class="kicker">The dashboard</p>
-  <h2>Every project, one wallet.</h2>
-  <p class="lede" style="margin-bottom:0">This is what the dashboard is designed to look like. The rows below are an example.</p>
-  ${dash}
-  <p class="small" style="margin-top:12px">Be clear about the limits: sites with servers or databases keep those parts where they are. b0-x hosts and publishes the static half.</p>
 </div></section>
 
 <section><div class="wrap">
@@ -180,7 +201,8 @@ pages['index'] = layout({
   <h2>Be first in.</h2>
   <p class="lede">b0-x is being built now. Connect bWalletX and we'll show your early-access key. There's no sign-up form and nothing is stored on our side.</p>
   ${cta()}
-</div></section>`,
+</div></section>
+<script id="hx-data" type="application/json">${json(gallery.map(({ domain, name, color, line, stage, chain, shot: s }) => ({ domain, name, color, line, stage, chain, shot: s })))}</script>`,
 });
 
 pages['deploy'] = layout({
@@ -466,7 +488,7 @@ pages['about'] = layout({
 </div></section>
 <section><div class="wrap">
   <p class="kicker">Status</p><h2>Early access, in development.</h2>
-  <div class="prose"><p>Nothing on this site is live yet. The terminal, dashboard and docs show the design we're building towards, and they'll change as developers try it. We'd rather tell you that plainly than show made-up numbers.</p>
+  <div class="prose"><p>Deploys aren’t open yet. The sites gallery on the home page and the on-chain gateway are live; the terminal and docs show the design we're building towards, and they'll change as developers try it. We'd rather tell you that plainly than show made-up numbers.</p>
   <p>Early access has no form and no mailing list. Connect bWalletX and you'll see your key; when there's something to try, it will be announced on b0ase.com and bwalletx.com.</p></div>
   ${cta()}
 </div></section>`,
