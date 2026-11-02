@@ -101,7 +101,7 @@
 
   // Magic Mouse / trackpad: horizontal scroll follows the finger, then snaps to the nearest site.
   let wheelEnd;
-  flow.addEventListener('wheel', (e) => {
+  document.querySelector('.hx-sites').addEventListener('wheel', (e) => {
     if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
     e.preventDefault();
     drag += e.deltaX / (cw * 0.6);
