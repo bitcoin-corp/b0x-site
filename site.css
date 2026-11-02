@@ -19,6 +19,14 @@ img,svg{max-width:100%}
 .nav{display:flex;align-items:center;justify-content:space-between;gap:12px;height:68px}
 .brand{display:flex;align-items:center;gap:10px;font:700 22px 'Space Grotesk';text-decoration:none;letter-spacing:-.02em;flex:none}
 .brand img{width:20px;height:28px}
+/* BETA pill after the logo (family standard: the bWalletX tag). Not a control, so no hover. */
+.brand-row{display:flex;align-items:center;gap:10px;flex:none;min-width:0}
+.beta-tag{display:inline-flex;align-items:center;flex:none;padding:2px 8px;border:1px solid rgba(245,184,0,.6);border-radius:999px;background:transparent;color:#F5B800;font:700 10.5px/1.4 'IBM Plex Sans',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;user-select:none}
+@media(max-width:400px){.brand-row{gap:8px}.beta-tag{font-size:9px;padding:2px 7px}}
+/* "Beta: use small amounts" strip on pages with deploy payments; dismissed per session (sessionStorage). */
+.amt-bar{position:relative;display:flex;align-items:center;justify-content:center;min-height:30px;padding:4px 44px;background:#140f02;border-bottom:1px solid rgba(245,184,0,.35);color:#F5B800;font:600 12.5px/1.3 'IBM Plex Sans',system-ui,sans-serif;letter-spacing:.02em;text-align:center}
+.amt-x{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;display:grid;place-items:center;background:none;border:0;border-radius:6px;color:#cfcabd;font:400 18px/1 'IBM Plex Sans',system-ui,sans-serif;cursor:pointer}
+.amt-x:hover{color:#F5B800;background:rgba(245,184,0,.1)}
 .links{display:flex;gap:4px;align-items:center;font-size:14px}
 .links a{color:#cfcabd;text-decoration:none;padding:8px 10px;border-radius:8px;transition:color .16s var(--ease),background .16s var(--ease)}
 .links a:hover{color:var(--ink);background:var(--line2)}
@@ -126,12 +134,14 @@ pre code{background:none;border:0;padding:0;color:inherit}
 @media(max-width:860px){.docs{grid-template-columns:1fr}.docs aside{position:static;display:flex;flex-wrap:wrap;gap:4px 14px}}
 
 /* footer */
-footer.site{padding:48px 0 40px;color:var(--mute);font-size:14px}
+footer.site{padding-top:48px;padding-bottom:40px;color:var(--mute);font-size:14px}
 .fgrid{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:28px}
 @media(max-width:760px){.fgrid{grid-template-columns:1fr 1fr}}
 .fgrid h4{font:600 12px 'Space Grotesk';letter-spacing:.14em;text-transform:uppercase;color:var(--ink);margin:0 0 10px}
 .fgrid a{display:block;color:var(--mute);text-decoration:none;padding:3px 0}.fgrid a:hover{color:var(--gold)}
 .fine{margin-top:32px;padding-top:18px;border-top:1px solid var(--line2);font-size:12.5px}
+/* company disclosure: its own line, the same small muted text as .fine (#9a968b on #050506, about 7:1) */
+footer.site .disclose{margin:8px 0 0;font-size:12.5px;color:var(--mute)}
 
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 
@@ -328,6 +338,7 @@ a.hx-card:focus-visible{outline:none}a.hx-card:focus-visible .hx-win{box-shadow:
 
 .sp-foot{text-align:center;padding:8px 16px 40px}
 .sp-foot p{margin:0 auto;font-size:12.5px;color:#b3ae9f;letter-spacing:.01em;text-shadow:0 1px 2px #000}
+.sp-foot .disclose{margin-top:8px;max-width:560px;text-wrap:balance}
 .sp-foot a{color:var(--ink2);text-decoration:none}.sp-foot a:hover{color:var(--gold)}
 @media(max-width:520px){
   .sp{padding-top:28px}

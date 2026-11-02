@@ -28,13 +28,23 @@ const strip = `<!-- Part of bWalletX strip (shared snippet, same on every bWalle
 <aside class="bwx-strip" aria-label="bWalletX"><a href="https://bwalletx.com"><svg viewBox="23 8 74 100" aria-hidden="true" focusable="false"><defs><linearGradient id="bwx-g" gradientUnits="userSpaceOnUse" x1="0" y1="12" x2="0" y2="105"><stop offset="0" stop-color="#FFE58A"/><stop offset=".55" stop-color="#FFD24D"/><stop offset="1" stop-color="#C98F00"/></linearGradient><mask id="bwx-m"><rect width="140" height="140" fill="#fff"/><circle cx="60" cy="72" r="15" fill="#000"/></mask></defs><g fill="url(#bwx-g)" mask="url(#bwx-m)"><polygon points="45,12 45,76 27,76 27,30"/><circle cx="60" cy="72" r="33"/></g></svg><span>Part of <b>bWalletX</b></span><span class="bwx-go" aria-hidden="true">&rarr;</span></a></aside>
 <!-- /Part of bWalletX strip -->`;
 
+// Family standard (bitcoin-corp-coo/docs/design/BETA-AND-DISCLOSURE.md): BETA pill after the logo,
+// the operating company's disclosure in every footer, and "Beta: use small amounts" on the pages that move money.
+const BETA = '<span class="beta-tag" aria-label="Beta">Beta</span>';
+const DISCLOSE = 'b0-x is run by The Bitcoin Corporation Ltd, registered in England and Wales no. 16735102, Flat 6, 315 Barking Road, London E13 8EE.';
+const SMALL_KEY = 'b0x-small-amounts';
+const smallBar = `<div class="amt-bar" id="amt-bar"><span>Beta: use small amounts</span><button class="amt-x" type="button" aria-label="Dismiss for this session">&times;</button></div>
+<script>(()=>{const b=document.getElementById('amt-bar');try{if(sessionStorage.getItem('${SMALL_KEY}')==='1'){b.remove();return}}catch(e){}b.querySelector('button').onclick=()=>{try{sessionStorage.setItem('${SMALL_KEY}','1')}catch(e){}b.remove()}})();</script>`;
+
 const EA = 'Connect bWalletX to join early access. Nothing is stored; this just shows you your key.';
 const cta = (extra = '') => `<div class="ctas"><button class="btn gb" type="button" data-ea-connect>Connect bWalletX to join early access</button>${extra}</div>
 <p class="ea-note" data-ea="${EA}" aria-live="polite">${EA}</p>`;
 
 // wallet: false leaves out the Connect bWalletX scripts (a page that only links out to bWalletX).
 // foot: replaces the full footer. cls: a class on <body>.
-function layout({ path, title, desc, body, script = '', tail = '', top, wallet = true, foot, cls }) {
+// small: shows the "Beta: use small amounts" strip at the top. Off everywhere for now: b0-x takes no payment yet.
+// When deploy payments open, add `small: true` to the /deploy, /pricing, /new and /dashboard pages below.
+function layout({ path, title, desc, body, script = '', tail = '', top, wallet = true, foot, cls, small = false }) {
   const url = ORIGIN + (path === '/' ? '/' : path);
   const links = NAV.map(([h, t]) => `<a href="${h}"${h === path ? ' aria-current="page"' : ''}>${t}</a>`).join('');
   return `<!doctype html>
@@ -66,10 +76,10 @@ function layout({ path, title, desc, body, script = '', tail = '', top, wallet =
 </head>
 <body${cls ? ` class="${cls}"` : ''}>
 <a class="skip" href="#main">Skip to content</a>
-${strip}
+${small ? smallBar + '\n' : ''}${strip}
 ${top ? top(links) : `<div class="ea-bar"><b>Early access</b>b0-x is in development. Deploys aren’t open yet; the sites gallery and the on-chain gateway are live. Examples are labelled.</div>
 <header class="wrap nav site">
-  <a class="brand" href="/" aria-label="b0-x home"><img src="/logo.svg" width="20" height="28" alt=""><span>b0<span class="gold">-x</span></span></a>
+  <div class="brand-row"><a class="brand" href="/" aria-label="b0-x home"><img src="/logo.svg" width="20" height="28" alt=""><span>b0<span class="gold">-x</span></span></a>${BETA}</div>
   <nav class="links" id="links" aria-label="Main">${links}</nav>
   <div class="nav-right"><span data-bwx></span><button class="menu-btn" type="button" aria-controls="links" aria-expanded="false" aria-label="Menu">&#9776;</button></div>
 </header>`}
@@ -84,6 +94,7 @@ ${foot ?? `<footer class="site wrap">
     <div><h4>bWalletX family</h4><a href="https://bwalletx.com/b-family">Part of the bWalletX family</a><a href="https://bwalletx.com">bWalletX</a><a href="https://bstorex.com">bStoreX</a><a href="https://bwebx.com">bWebX</a><a href="https://bmintx.com">bMintX</a><a href="https://b0ase.com">b0ase.com</a></div>
   </div>
   <p class="fine">b0-x · part of the bWalletX family · publishes with bWebX · runs on Bitcoin SV. The CLI and config shown on this site are sketches of the planned design and may change.</p>
+  <p class="disclose">${DISCLOSE}</p>
 </footer>`}
 ${wallet ? `<script src="https://unpkg.com/@bwalletx/connect@0.5.0/dist/bwalletx-connect.global.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
@@ -132,7 +143,7 @@ const json = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
 const homeTop = (links) => `<header class="hx-top">
 <div class="hx-art" aria-hidden="true"><img class="hx-bg" src="/img/sites-wall.webp" alt="" width="1920" height="900" fetchpriority="high"><div class="hx-blocks"></div><div class="hx-ghost">DEPLOY</div></div>
 <div class="wrap nav site">
-  <a class="brand" href="/" aria-label="b0-x home"><img src="/logo.svg" width="20" height="28" alt=""><span>0-x</span></a>
+  <div class="brand-row"><a class="brand" href="/" aria-label="b0-x home"><img src="/logo.svg" width="20" height="28" alt=""><span>0-x</span></a>${BETA}</div>
   <nav class="links" id="links" aria-label="Main">${links}</nav>
   <div class="nav-right"><span data-bwx></span><button class="menu-btn" type="button" aria-controls="links" aria-expanded="false" aria-label="Menu">&#9776;</button></div>
 </div>
@@ -532,7 +543,7 @@ pages['start'] = layout({
   cls: 'sp-page',
   wallet: false,
   top: (links) => `<header class="wrap nav site sp-nav">
-  <a class="brand" href="/" aria-label="b0-x home"><img src="/logo.svg" width="20" height="28" alt=""><span>b0<span class="gold">-x</span></span></a>
+  <div class="brand-row"><a class="brand" href="/" aria-label="b0-x home"><img src="/logo.svg" width="20" height="28" alt=""><span>b0<span class="gold">-x</span></span></a>${BETA}</div>
   <nav class="links" id="links" aria-label="Main">${links}</nav>
   <div class="nav-right"><button class="menu-btn" type="button" aria-controls="links" aria-expanded="false" aria-label="Menu">&#9776;</button></div>
 </header>`,
@@ -569,7 +580,7 @@ pages['start'] = layout({
     </li>
   </ol>
 </div>`,
-  foot: `<footer class="sp-foot"><p><a href="/">b0-x</a> by The Bitcoin Corporation Ltd · part of the <a href="https://bwalletx.com/b-family">bWalletX family</a> · runs on Bitcoin SV</p></footer>`,
+  foot: `<footer class="sp-foot"><p><a href="/">b0-x</a> · part of the <a href="https://bwalletx.com/b-family">bWalletX family</a> · runs on Bitcoin SV</p><p class="disclose">${DISCLOSE}</p></footer>`,
   // Live status: drop a service that has stopped serving its real site. Keeps the built list if the check fails.
   script: `fetch('/api/sites').then((r)=>r.ok?r.json():null).then((j)=>{if(!j||!j.sites)return;document.querySelectorAll('.sp-svc[data-d]').forEach((a)=>{const s=j.sites[a.dataset.d];if(s&&s!=='live')a.parentElement.remove()})}).catch(()=>{});`,
 });
