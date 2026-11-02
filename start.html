@@ -87,7 +87,7 @@
   </ol>
 </div>
 </main>
-<footer class="sp-foot"><p><a href="/">b0-x</a> · part of the <a href="https://bwalletx.com/b-family">bWalletX family</a> · runs on Bitcoin SV</p></footer>
+<footer class="sp-foot"><p><a href="/">b0-x</a> by The Bitcoin Corporation Ltd · part of the <a href="https://bwalletx.com/b-family">bWalletX family</a> · runs on Bitcoin SV</p></footer>
 <script>
 (()=>{const b=document.querySelector('.menu-btn'),l=document.getElementById('links');b.onclick=()=>{const o=l.classList.toggle('open');b.setAttribute('aria-expanded',o)}})();
 fetch('/api/sites').then((r)=>r.ok?r.json():null).then((j)=>{if(!j||!j.sites)return;document.querySelectorAll('.sp-svc[data-d]').forEach((a)=>{const s=j.sites[a.dataset.d];if(s&&s!=='live')a.parentElement.remove()})}).catch(()=>{});

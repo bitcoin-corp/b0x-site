@@ -575,7 +575,7 @@ pages['start'] = layout({
     </li>
   </ol>
 </div>`,
-  foot: `<footer class="sp-foot"><p><a href="/">b0-x</a> · part of the <a href="https://bwalletx.com/b-family">bWalletX family</a> · runs on Bitcoin SV</p></footer>`,
+  foot: `<footer class="sp-foot"><p><a href="/">b0-x</a> by The Bitcoin Corporation Ltd · part of the <a href="https://bwalletx.com/b-family">bWalletX family</a> · runs on Bitcoin SV</p></footer>`,
   // Live status: drop a service that has stopped serving its real site. Keeps the built list if the check fails.
   script: `fetch('/api/sites').then((r)=>r.ok?r.json():null).then((j)=>{if(!j||!j.sites)return;document.querySelectorAll('.sp-svc[data-d]').forEach((a)=>{const s=j.sites[a.dataset.d];if(s&&s!=='live')a.parentElement.remove()})}).catch(()=>{});`,
 });
