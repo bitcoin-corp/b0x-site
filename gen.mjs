@@ -32,7 +32,9 @@ const EA = 'Connect bWalletX to join early access. Nothing is stored; this just 
 const cta = (extra = '') => `<div class="ctas"><button class="btn gb" type="button" data-ea-connect>Connect bWalletX to join early access</button>${extra}</div>
 <p class="ea-note" data-ea="${EA}" aria-live="polite">${EA}</p>`;
 
-function layout({ path, title, desc, body, script = '', tail = '', top }) {
+// wallet: false leaves out the Connect bWalletX scripts (a page that only links out to bWalletX).
+// foot: replaces the full footer. cls: a class on <body>.
+function layout({ path, title, desc, body, script = '', tail = '', top, wallet = true, foot, cls }) {
   const url = ORIGIN + (path === '/' ? '/' : path);
   const links = NAV.map(([h, t]) => `<a href="${h}"${h === path ? ' aria-current="page"' : ''}>${t}</a>`).join('');
   return `<!doctype html>
@@ -62,7 +64,7 @@ function layout({ path, title, desc, body, script = '', tail = '', top }) {
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
 </head>
-<body>
+<body${cls ? ` class="${cls}"` : ''}>
 <a class="skip" href="#main">Skip to content</a>
 ${strip}
 ${top ? top(links) : `<div class="ea-bar"><b>Early access</b>b0-x is in development. Deploys aren’t open yet; the sites gallery and the on-chain gateway are live. Examples are labelled.</div>
@@ -74,19 +76,19 @@ ${top ? top(links) : `<div class="ea-bar"><b>Early access</b>b0-x is in developm
 <main id="main">
 ${body}
 </main>
-<footer class="site wrap">
+${foot ?? `<footer class="site wrap">
   <div class="fgrid">
     <div><a class="brand" href="/" style="padding:0;color:var(--ink)"><img src="/logo.svg" width="20" height="28" alt=""><span>b0<span class="gold">-x</span></span></a><p style="margin-top:12px">Vercel and GitHub for developers, on Bitcoin. Early access; in development.</p></div>
-    <div><h4>Product</h4><a href="/deploy">Deploy</a><a href="/storage">Storage</a><a href="/publish">Publish</a><a href="/names">Names</a><a href="/pricing">Pricing</a></div>
+    <div><h4>Product</h4><a href="/start">Start here</a><a href="/deploy">Deploy</a><a href="/storage">Storage</a><a href="/publish">Publish</a><a href="/names">Names</a><a href="/pricing">Pricing</a></div>
     <div><h4>Developers</h4><a href="/docs">Docs (draft)</a><a href="/dashboard">Dashboard</a><a href="/new">New project</a><a href="/about">About</a></div>
     <div><h4>bWalletX family</h4><a href="https://bwalletx.com/b-family">Part of the bWalletX family</a><a href="https://bwalletx.com">bWalletX</a><a href="https://bstorex.com">bStoreX</a><a href="https://bwebx.com">bWebX</a><a href="https://bmintx.com">bMintX</a><a href="https://b0ase.com">b0ase.com</a></div>
   </div>
   <p class="fine">b0-x · part of the bWalletX family · publishes with bWebX · runs on Bitcoin SV. The CLI and config shown on this site are sketches of the planned design and may change.</p>
-</footer>
-<script src="https://unpkg.com/@bwalletx/connect@0.5.0/dist/bwalletx-connect.global.js"></script>
+</footer>`}
+${wallet ? `<script src="https://unpkg.com/@bwalletx/connect@0.5.0/dist/bwalletx-connect.global.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="/bwx.js"></script>
-<script>
+` : ''}<script>
 (()=>{const b=document.querySelector('.menu-btn'),l=document.getElementById('links');b.onclick=()=>{const o=l.classList.toggle('open');b.setAttribute('aria-expanded',o)}})();
 ${script}
 </script>
@@ -506,6 +508,76 @@ pages['about'] = layout({
   <p>Early access has no form and no mailing list. Connect bWalletX and you'll see your key; when there's something to try, it will be announced on b0ase.com and bwalletx.com.</p></div>
   ${cta()}
 </div></section>`,
+});
+
+// ---------- /start: a first-time visitor's three steps (wallet, a site, its chat room) ----------
+// Matches the bWalletX onboarding page (web.bwalletx.com/start): obsidian with gold seams, a centred gold b,
+// one narrow column, a gold button and a black one with a gold edge. No wallet connect here; it links out.
+// Names, colours and taglines are copied exactly from bwalletx.com/b-family (the single source), and only
+// services marked Live there are listed. The generator also drops any that sites.json doesn't have as live,
+// and the page drops any that /api/sites reports as not live.
+const FAMILY_LIVE = [ // bwalletx.com/b-family, read 2 Nov 2026: the "Live" services (bWalletX and bChatX have their own steps)
+  { domain: 'bmarketx.com', name: 'bMarketX', color: '#D4A017', line: 'Sell anything you’ve minted.' },
+  { domain: 'bmoviesx.com', name: 'bMoviesX', color: '#FF1F2D', line: 'Upload your movies. Mint them on Bitcoin.' },
+  { domain: 'bvideox.com', name: 'bVideoX', color: '#FF6A13', line: 'Your channel, owned by you.' },
+  { domain: 'bjobsx.com', name: 'bJobsX', color: '#2FD4C4', line: 'Work, paid in Bitcoin.' },
+  { domain: 'badvertisingx.com', name: 'bAdvertisingX', color: '#B44DFF', line: 'Tell b about your business. Get the ad.' },
+  { domain: 'bsignx.com', name: 'bSignX', color: '#FACC15', line: 'Contracts both sides sign.' },
+  { domain: 'bgitx.com', name: 'bGitX', color: '#F5B800', line: 'Connect your GitHub repos and give each one a room.' },
+];
+const BCHAT = { domain: 'bchatx.com', name: 'bChatX', color: '#C9CED8' }; // b-family colour
+const liveNow = new Set(SITES.sites.filter((s) => s.stage === 'live').map((s) => s.domain));
+const startSvcs = FAMILY_LIVE.filter((s) => liveNow.has(s.domain)).slice(0, 8);
+// The b in the service's colour, the X in gold (as on the bChatX new-room card and b-family).
+const wordmark = (s) => `${B}<span class="sr">b</span>${esc(s.name.slice(1, -1))}<span class="sp-x">X</span>`;
+const svc = (s) => `<li><a class="sp-svc" href="https://${s.domain}" target="_blank" rel="noopener" data-d="${s.domain}" style="--c:${s.color}"><span class="sp-wm">${wordmark(s)}</span><span class="sp-tl">${esc(s.line)}</span><span class="sp-go" aria-hidden="true">↗</span></a></li>`;
+
+pages['start'] = layout({
+  path: '/start', title: 'Start here · b0-x',
+  desc: 'New to the b*X sites? Get bWalletX, pick a live service, and meet people in its chat room on bChatX.',
+  cls: 'sp-page',
+  wallet: false,
+  top: (links) => `<header class="wrap nav site sp-nav">
+  <a class="brand" href="/" aria-label="b0-x home"><img src="/logo.svg" width="20" height="28" alt=""><span>b0<span class="gold">-x</span></span></a>
+  <nav class="links" id="links" aria-label="Main">${links}</nav>
+  <div class="nav-right"><button class="menu-btn" type="button" aria-controls="links" aria-expanded="false" aria-label="Menu">&#9776;</button></div>
+</header>`,
+  body: `<div class="sp">
+  <div class="sp-head">
+    <img class="sp-mark" src="/favicon.svg" width="72" height="72" alt="">
+    <p class="sp-eye">Start here</p>
+    <h1 class="sp-h1">Three steps in.</h1>
+    <p class="sp-lede">Get the wallet, pick a site, then meet people there.</p>
+  </div>
+  <ol class="sp-steps">
+    <li class="sp-step" aria-labelledby="sp-1">
+      <h2 class="sp-h2" id="sp-1"><span class="sp-n" aria-hidden="true">1</span>Get bWalletX <span class="sp-beta">Beta</span></h2>
+      <p class="sp-p">It’s the one wallet you use across every b*X site.</p>
+      <div class="sp-btns">
+        <a class="sp-btn sp-gold" href="https://web.bwalletx.com/start">Get bWalletX</a>
+        <a class="sp-btn sp-line" href="https://bwalletx.com/get">Phone, Chrome and Mac apps</a>
+      </div>
+    </li>
+    <li class="sp-step" aria-labelledby="sp-2">
+      <h2 class="sp-h2" id="sp-2"><span class="sp-n" aria-hidden="true">2</span>Pick a service</h2>
+      <p class="sp-p">These are live now. Each opens in a new tab.</p>
+      <ul class="sp-svcs" role="list">
+        ${startSvcs.map(svc).join('\n        ')}
+        <li><a class="sp-svc sp-all" href="/#sites"><span>See all sites</span><span aria-hidden="true">→</span></a></li>
+      </ul>
+    </li>
+    <li class="sp-step" aria-labelledby="sp-3">
+      <h2 class="sp-h2" id="sp-3"><span class="sp-n" aria-hidden="true">3</span>Meet people there</h2>
+      <p class="sp-p">Every b*X site has a chat room on bChatX.</p>
+      <div class="sp-btns">
+        <a class="sp-btn sp-line" href="https://www.bchatx.com" style="--c:${BCHAT.color}">Open <span class="sp-wm sp-wm-in">${wordmark(BCHAT)}</span></a>
+      </div>
+    </li>
+  </ol>
+</div>`,
+  foot: `<footer class="sp-foot"><p><a href="/">b0-x</a> · part of the <a href="https://bwalletx.com/b-family">bWalletX family</a> · runs on Bitcoin SV</p></footer>`,
+  // Live status: drop a service that has stopped serving its real site. Keeps the built list if the check fails.
+  script: `fetch('/api/sites').then((r)=>r.ok?r.json():null).then((j)=>{if(!j||!j.sites)return;document.querySelectorAll('.sp-svc[data-d]').forEach((a)=>{const s=j.sites[a.dataset.d];if(s&&s!=='live')a.parentElement.remove()})}).catch(()=>{});`,
 });
 
 for (const [name, html] of Object.entries(pages)) writeFileSync(new URL(`./${name}.html`, import.meta.url), html);
