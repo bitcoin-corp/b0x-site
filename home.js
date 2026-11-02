@@ -146,7 +146,8 @@
   // Live status: refresh chips, regroup the shelf and recount. Keeps the audited status if the check fails.
   fetch('/api/sites').then((r) => (r.ok ? r.json() : null)).then((j) => {
     if (!j?.sites) return;
-    for (const s of all) if (j.sites[s.domain]) s.stage = j.sites[s.domain];
+    // `pinned`: live by another route than its web page (bTerminalX ships as the npm CLI while its site is a holding page).
+    for (const s of all) if (j.sites[s.domain] && !s.pinned) s.stage = j.sites[s.domain];
     document.querySelectorAll('[data-d]').forEach((el) => {
       const s = all.find((x) => x.domain === el.dataset.d), ch = el.querySelector('[data-st]');
       if (!s || !ch) return;

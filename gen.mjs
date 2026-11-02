@@ -204,7 +204,7 @@ pages['index'] = layout({
   <p class="lede">b0-x is being built now. Connect bWalletX and we'll show your early-access key. There's no sign-up form and nothing is stored on our side.</p>
   ${cta()}
 </div></section>
-<script id="hx-data" type="application/json">${json(gallery.map(({ domain, name, color, line, stage, chain, shot: s }) => ({ domain, name, color, line, stage, chain, shot: s })))}</script>`,
+<script id="hx-data" type="application/json">${json(gallery.map(({ domain, name, color, line, stage, chain, shot: s, pinned }) => ({ domain, name, color, line, stage, chain, shot: s, ...(pinned ? { pinned: true } : {}) })))}</script>`,
 });
 
 pages['deploy'] = layout({
