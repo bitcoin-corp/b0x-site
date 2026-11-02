@@ -244,8 +244,7 @@
       "name": "bTerminalX",
       "color": "#A3A3A3",
       "line": "The CLI for your own wallet and agents.",
-      "stage": "live",
-      "pinned": true
+      "stage": "soon"
     },
     {
       "domain": "bvaultx.com",
