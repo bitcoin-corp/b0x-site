@@ -37,5 +37,11 @@
       "source": "/s",
       "destination": "/api/s?r="
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "*": false,
+      "main": true
+    }
+  }
 }
