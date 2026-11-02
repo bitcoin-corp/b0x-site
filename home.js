@@ -14,7 +14,7 @@
   const groupOf = (s) => (s.stage === 'live' || s.stage === 'soon' ? s.stage : 'out');
   const inFilter = (s, f) => f === 'all' || (f === 'chain' ? !!s.chain : groupOf(s) === f);
 
-  let filter = 'all', set = all.map((_, i) => i), cur = 0, drag = 0, cw = 560, wide = 1000;
+  let filter = 'all', set = all.map((_, i) => i), cur = 0, drag = 0, cw = 560, wide = 1000, shown = -1;
 
   function measure() {
     wide = flow.clientWidth;
@@ -44,13 +44,16 @@
       c.toggleAttribute('aria-hidden', k !== cur);
       c.tabIndex = k === cur ? 0 : -1;
     });
+    // Keep the name and info in time with the cards while they move (drag, swipe, wheel), not only once they settle.
+    if (N) { const near = (((Math.round(cur + drag) % N) + N) % N); if (near !== shown) show(near); }
   }
 
   const chipHtml = (s) => `<span class="hx-chip st-${s.stage}" data-st>${STAGE[s.stage]}</span>${s.chain ? `<span class="hx-chip st-chain">On chain · v${s.chain.v}</span>` : ''}`;
 
-  function show() {
-    const s = all[set[cur]];
+  function show(k = cur) {
+    const s = all[set[k]];
     if (!s) return;
+    shown = k;
     info.style.setProperty('--c', s.color);
     info.querySelector('.hx-name').innerHTML = s.name[0] === 'b' ? `${B}<span class="sr">b</span>${esc(s.name.slice(1))}` : esc(s.name);
     info.querySelector('.hx-line').textContent = s.line || STAGE_LINE[s.stage];
@@ -61,7 +64,7 @@
     visit.toggleAttribute('aria-disabled', s.stage === 'down');
     chain.hidden = !s.chain;
     if (s.chain) { chain.href = `/s/${s.chain.name}/`; chain.textContent = `Open on chain · v${s.chain.v}`; }
-    info.querySelector('[data-count]').textContent = `${cur + 1} / ${set.length}`;
+    info.querySelector('[data-count]').textContent = `${k + 1} / ${set.length}`;
   }
 
   const go = (k) => { const N = set.length; cur = ((k % N) + N) % N; drag = 0; place(); show(); };
