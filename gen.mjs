@@ -106,9 +106,10 @@ const REG = JSON.parse(readFileSync(new URL('./names.json', import.meta.url), 'u
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const chainBy = Object.fromEntries(Object.entries(REG).filter(([, v]) => v.source).map(([name, v]) => [v.source, { name, v: v.versions.length }]));
 const RANK = { live: 1, soon: 2, sale: 3, down: 4 };
+const FIRST = 'bwalletx.com'; // the carousel opens on bWalletX
 const gallery = SITES.sites
   .map((s) => { const slug = s.domain.replace(/\.com$/, ''); return { ...s, slug, chain: chainBy[s.domain] || null, shot: existsSync(new URL(`./img/sites/${slug}.webp`, import.meta.url)) }; })
-  .sort((a, b) => (!!b.chain - !!a.chain) || RANK[a.stage] - RANK[b.stage] || a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
+  .sort((a, b) => (b.domain === FIRST) - (a.domain === FIRST) || (!!b.chain - !!a.chain) || RANK[a.stage] - RANK[b.stage] || a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
 const groupOf = (s) => (s.stage === 'live' || s.stage === 'soon' ? s.stage : 'out');
 const STAGE = { live: 'Live', soon: 'Placeholder', sale: 'For sale', down: 'Not responding' };
 const STAGE_LINE = { live: '', soon: 'Holding page. The site isn’t built yet.', sale: 'The domain is for sale.', down: 'Doesn’t respond yet.' };
@@ -171,7 +172,7 @@ pages['index'] = layout({
     <p class="hx-gsub">${sub}</p>
     <div class="hx-grid">${gallery.filter((s) => groupOf(s) === g).map(tile).join('')}</div>
   </div>`).join('\n  ')}
-  <p class="small hx-note"><span data-checked>Status as checked ${shotDate}</span>. Screenshots taken ${shotDate}. bOpenX and bForgeX aren’t listed.</p>
+  <p class="small hx-note"><span data-checked>Status as checked ${shotDate}</span>. Screenshots taken ${shotDate}.</p>
 </div></section>
 
 <section><div class="wrap">
