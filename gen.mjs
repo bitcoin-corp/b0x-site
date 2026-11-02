@@ -513,19 +513,13 @@ pages['about'] = layout({
 // ---------- /start: a first-time visitor's three steps (wallet, a site, its chat room) ----------
 // Matches the bWalletX onboarding page (web.bwalletx.com/start): obsidian with gold seams, a centred gold b,
 // one narrow column, a gold button and a black one with a gold edge. No wallet connect here; it links out.
-// Names, colours and taglines are copied exactly from bwalletx.com/b-family (the single source), and only
-// services marked Live there are listed. The generator also drops any that sites.json doesn't have as live,
-// and the page drops any that /api/sites reports as not live.
-const FAMILY_LIVE = [ // bwalletx.com/b-family, read 2 Nov 2026: the "Live" services (bWalletX and bChatX have their own steps)
-  { domain: 'bmarketx.com', name: 'bMarketX', color: '#D4A017', line: 'Sell anything you’ve minted.' },
-  { domain: 'bmoviesx.com', name: 'bMoviesX', color: '#FF1F2D', line: 'Upload your movies. Mint them on Bitcoin.' },
-  { domain: 'bvideox.com', name: 'bVideoX', color: '#FF6A13', line: 'Your channel, owned by you.' },
-  { domain: 'bjobsx.com', name: 'bJobsX', color: '#2FD4C4', line: 'Work, paid in Bitcoin.' },
-  { domain: 'badvertisingx.com', name: 'bAdvertisingX', color: '#B44DFF', line: 'Tell b about your business. Get the ad.' },
-  { domain: 'bsignx.com', name: 'bSignX', color: '#FACC15', line: 'Contracts both sides sign.' },
-  { domain: 'bgitx.com', name: 'bGitX', color: '#F5B800', line: 'Connect your GitHub repos and give each one a room.' },
-];
-const BCHAT = { domain: 'bchatx.com', name: 'bChatX', color: '#C9CED8' }; // b-family colour
+// The services come from start.json: names, colours and taglines copied exactly from bwalletx.com/b-family
+// (the single source), and only services marked Live there. `pnpm check:start` compares the two and fails on
+// any drift. The generator also drops any that sites.json doesn't have as live, and the page drops any that
+// /api/sites reports as not live.
+const START = JSON.parse(readFileSync(new URL('./start.json', import.meta.url), 'utf8'));
+const FAMILY_LIVE = START.services; // bWalletX and bChatX have their own steps
+const BCHAT = START.chat; // b-family colour
 const liveNow = new Set(SITES.sites.filter((s) => s.stage === 'live').map((s) => s.domain));
 const startSvcs = FAMILY_LIVE.filter((s) => liveNow.has(s.domain)).slice(0, 8);
 // The b in the service's colour, the X in gold (as on the bChatX new-room card and b-family).
