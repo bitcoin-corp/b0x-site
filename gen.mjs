@@ -3,7 +3,7 @@
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 
 const ORIGIN = 'https://b0-x.com';
-const OG = `${ORIGIN}/og-b0x-v1.png`;
+const OG = `${ORIGIN}/og-b0x-v2.png`;
 const NAV = [
   ['/#sites', 'Sites'], ['/deploy', 'Deploy'], ['/storage', 'Storage'], ['/publish', 'Publish'], ['/names', 'Names'],
   ['/pricing', 'Pricing'], ['/docs', 'Docs'], ['/dashboard', 'Dashboard'], ['/about', 'About'],
@@ -81,7 +81,7 @@ ${body}
     <div><h4>Developers</h4><a href="/docs">Docs (draft)</a><a href="/dashboard">Dashboard</a><a href="/new">New project</a><a href="/about">About</a></div>
     <div><h4>bWalletX family</h4><a href="https://bwalletx.com/b-family">Part of the bWalletX family</a><a href="https://bwalletx.com">bWalletX</a><a href="https://bstorex.com">bStoreX</a><a href="https://bwebx.com">bWebX</a><a href="https://bmintx.com">bMintX</a><a href="https://b0ase.com">b0ase.com</a></div>
   </div>
-  <p class="fine">b0-x · part of the bWalletX family · built on bStoreX · publishes with bWebX · runs on Bitcoin SV. The CLI and config shown on this site are sketches of the planned design and may change.</p>
+  <p class="fine">b0-x · part of the bWalletX family · publishes with bWebX · runs on Bitcoin SV. The CLI and config shown on this site are sketches of the planned design and may change.</p>
 </footer>
 <script src="https://unpkg.com/@bwalletx/connect@0.5.0/dist/bwalletx-connect.global.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
@@ -137,7 +137,7 @@ const homeTop = (links) => `<header class="hx-top">
 <div class="wrap hx-in">
   <p class="hx-eye">Hosting on Bitcoin · early access</p>
   <h1 class="hx-h1">${B}<span class="sr">b</span><span class="hx-nm">0-x</span></h1>
-  <p class="hx-lede">Websites on Bitcoin, hosted from your wallet. Here’s every b*X site and where it stands.</p>
+  <p class="hx-lede">Websites on Bitcoin, published on chain. Here’s every b*X site and where it stands.</p>
   <div class="ctas"><a class="btn wt" href="#sites">See all ${gallery.length} sites</a><a class="btn ghost" href="/deploy">How deploys work</a><a class="btn gb" href="https://bwalletx.com">Get bWalletX</a></div>
 </div>
 </header>`;
@@ -146,7 +146,7 @@ const pages = {};
 
 pages['index'] = layout({
   path: '/', title: 'b0-x · Deploy to Bitcoin',
-  desc: 'Deploy websites to Bitcoin: host from your wallet, publish any version on chain, name it with OpNS. See every b*X site and where it stands. Early access.',
+  desc: 'Websites on Bitcoin: publish a static site on chain and serve it through the b0-x gateway. See every b*X site and where it stands. Early access.',
   top: homeTop,
   tail: '<script src="/home.js"></script>',
   body: `<section class="hx-sites" id="sites" aria-roledescription="carousel" aria-label="b*X sites">
@@ -180,7 +180,7 @@ pages['index'] = layout({
   <h2>Import. Host. Publish. Name.</h2>
   <div class="three" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
     <div class="card"><span class="n">1</span><h3>Import</h3><p>Connect Vercel or GitHub and pick a project. Static sites, docs and landing pages are the first target.</p><p><a class="gold" href="/deploy">Deploy →</a></p></div>
-    <div class="card"><span class="n">2</span><h3>Host on bStoreX</h3><p>Files go into your own bStoreX bucket on our Hetzner servers. Pay by locking BSV for a term, or monthly from your wallet.</p><p><a class="gold" href="/storage">Storage →</a></p></div>
+    <div class="card"><span class="n">2</span><h3>Host off chain <span class="tag dev">Later</span></h3><p>Hosting for previews and heavy media. Not built yet, and we haven't chosen the storage service. Today a site lives on chain.</p><p><a class="gold" href="/storage">Storage →</a></p></div>
     <div class="card"><span class="n">3</span><h3>Publish on chain</h3><p>Any version can be written to Bitcoin as a website ordinal: an ORDFS directory, each file its own inscription. ${gallery.filter((s) => s.chain).map((s) => s.name).join(' and ')} already are.</p><p><a class="gold" href="/publish">Publish →</a></p></div>
     <div class="card"><span class="n">4</span><h3>Name it</h3><p>An OpNS name you own points at your latest version. Ship a new version, move the name.</p><p><a class="gold" href="/names">Names →</a></p></div>
   </div>
@@ -190,7 +190,7 @@ pages['index'] = layout({
   <p class="kicker">Pricing · at cost</p>
   <h2>Pay with your wallet.</h2>
   <div class="three price">
-    <div class="card"><span class="small">Hosting</span><b>Lock or subscribe</b><p>Lock BSV for a term and get it back at the end, less the fee, or pay monthly. Priced by GB stored.</p></div>
+    <div class="card"><span class="small">Hosting off chain</span><b>Not built</b><p>Planned, for previews and heavy media. No storage service chosen yet, so no price yet.</p></div>
     <div class="card"><span class="small">Publish a version</span><b>~100 sats / kB</b><p>Our cost price for writing to Bitcoin. Written once, kept for good. Images and video cost more.</p></div>
     <div class="card"><span class="small">A name</span><b>OpNS</b><p>Your site's name is an ordinal you own, pointing at the version you choose.</p></div>
   </div>
@@ -207,84 +207,80 @@ pages['index'] = layout({
 
 pages['deploy'] = layout({
   path: '/deploy', title: 'Deploy · b0-x',
-  desc: 'Import a Vercel project or GitHub repo into b0-x: build, preview URLs and hosting on bStoreX. What works first and what comes later. In development.',
-  body: `${hero('Deploy', 'From Vercel or GitHub<br>to <span class="gold">Bitcoin</span>.', 'Point b0-x at a project you already have. It builds the static output, uploads it to your bStoreX bucket and gives you a preview URL. Publishing on chain is a separate, deliberate step.')}
+  desc: 'How deploys into b0-x will work: import a Vercel project or GitHub repo, build the static output, publish it on chain. What works today and what comes later. In development.',
+  body: `${hero('Deploy', 'From Vercel or GitHub<br>to <span class="gold">Bitcoin</span>.', 'Point b0-x at a project you already have. It builds the static output, and you choose whether to publish it on chain. Import and builds are planned; publishing works today.')}
 <section><div class="wrap split">
-  <div><p class="kicker">Import</p><h2>Two ways in.</h2><p class="prose" style="color:var(--ink2)">You sign in with bWalletX, then link the source you already use. b0-x reads the project; it does not take it over. Your Vercel project and GitHub repo stay exactly where they are.</p></div>
+  <div><p class="kicker">Import</p><h2>Two ways in. <span class="tag dev">Later</span></h2><p class="prose" style="color:var(--ink2)">You sign in with bWalletX, then link the source you already use. b0-x reads the project; it does not take it over. Your Vercel project and GitHub repo stay exactly where they are.</p></div>
   <div class="grid2" style="margin-top:0">
     <div class="card"><h3>From Vercel</h3><p>Link your Vercel account with a read-only token, pick a project, and b0-x pulls the build settings it can use: framework, output directory, build command.</p></div>
-    <div class="card"><h3>From GitHub</h3><p>Install the b0-x GitHub app on a repo. Pushes to the branch you choose trigger a build; other branches get previews.</p></div>
-    <div class="card"><h3>From your machine</h3><p>Or skip both: <code>npx b0-x deploy</code> in a folder uploads its built output directly.</p></div>
-    <div class="card"><h3>Your key signs it</h3><p>Every deploy is tied to your wallet key, so the dashboard, buckets and names all belong to you, not to an account we hold.</p></div>
+    <div class="card"><h3>From GitHub</h3><p>Install the b0-x GitHub app on a repo. Pushes to the branch you choose trigger a build. Previews for other branches need off-chain hosting, which isn't built.</p></div>
+    <div class="card"><h3>From your machine</h3><p>Or skip both and point b0-x at a built folder. Today that's the publisher, <code>pnpm publish-site &lt;dir&gt;</code>. See the <a class="gold" href="/docs#today">docs</a>.</p></div>
+    <div class="card"><h3>Your key signs it</h3><p>Every deploy is tied to your wallet key, so the dashboard, versions and names all belong to you, not to an account we hold.</p></div>
   </div>
 </div></section>
 <section><div class="wrap">
   <p class="kicker">Build</p><h2>Build, then upload the output.</h2>
   <p style="color:var(--ink2)">b0-x runs your build command in a clean container and keeps only the static output: HTML, CSS, JS, images, fonts. That output is what gets hosted and, if you choose, published.</p>
-  <pre class="code"><span class="c"># illustrative</span>
+  <pre class="code"><span class="c"># illustrative: this command doesn't exist yet</span>
 $ npx b0-x deploy
 → Detected: Next.js (static export) · output: out/
 → Running: pnpm build
 → 37 files · 4.2 MB
-<span class="o">✓ preview at https://my-docs-git-feature-x.b0-x.app</span></pre>
+<span class="o">✓ built. Publish it on chain?</span></pre>
   <div class="three">
-    <div class="card"><h3>Preview URLs</h3><p>Every build gets its own URL on <code>b0-x.app</code>. Share it, check it, throw it away. Previews live in bStoreX only and are never written on chain.</p></div>
-    <div class="card"><h3>Production</h3><p>Promote a build to production and your custom domain or b0-x URL serves it from bStoreX.</p></div>
-    <div class="card"><h3>Publish</h3><p>Any build, preview or production, can be <a class="gold" href="/publish">published on chain</a> as a numbered version.</p></div>
+    <div class="card"><h3>Preview URLs <span class="tag dev">Later</span></h3><p>A throwaway URL for each build, never written on chain. Not built: previews need off-chain hosting, and we haven't chosen the storage service.</p></div>
+    <div class="card"><h3>Serving</h3><p>Today the b0-x gateway serves published versions at <code>b0-x.com/s/&lt;name&gt;/</code>. Subdomains like <code>&lt;name&gt;.b0-x.com</code> are planned; DNS isn't set up.</p></div>
+    <div class="card"><h3>Publish</h3><p>A build can be <a class="gold" href="/publish">published on chain</a> as a numbered version. A name points at the version you choose.</p></div>
   </div>
 </div></section>
 <section><div class="wrap">
-  <p class="kicker">Honest scope</p><h2>What works first, what comes later.</h2>
-  <p style="color:var(--ink2)">Nothing is live yet. This is the order we plan to build in.</p>
+  <p class="kicker">Honest scope</p><h2>What works today, what comes later.</h2>
+  <p style="color:var(--ink2)">One thing works today. The rest is the order we plan to build in.</p>
   <ul class="status">
-    <li><span class="tag">First</span><span>Static sites: plain HTML, Vite, Astro, Next.js static export, docs generators (Docusaurus, VitePress, MkDocs). Upload, preview, production on bStoreX, publish on chain, OpNS names.</span></li>
+    <li><span class="tag">Today</span><span>Publishing a static site on chain with the CLI (<code>pnpm publish-site</code>): each file an inscription, plus an ORDFS directory. The gateway serves it at <code>b0-x.com/s/&lt;name&gt;/</code>. ${Object.keys(REG).sort().join(' and ')} are published.</span></li>
+    <li><span class="tag">First</span><span>Static sites: plain HTML, Vite, Astro, Next.js static export, docs generators (Docusaurus, VitePress, MkDocs). Build, publish on chain, OpNS names.</span></li>
     <li><span class="tag">First</span><span>Sign-in and payment with bWalletX (BRC-100), so any BRC-100 wallet works.</span></li>
     <li><span class="tag dev">Later</span><span>GitHub push-to-deploy and branch previews; Vercel project import with build-setting detection.</span></li>
-    <li><span class="tag dev">Later</span><span>Custom domains on hosted (bStoreX) versions.</span></li>
-    <li><span class="tag ex">Stays put</span><span>Servers, serverless functions and databases. A Next.js app with API routes keeps those on Vercel (or wherever it runs). b0-x hosts and publishes the static half: pages, assets, the front end.</span></li>
+    <li><span class="tag dev">Later</span><span>Off-chain hosting for previews and heavy media. Not built; no storage service chosen.</span></li>
+    <li><span class="tag dev">Later</span><span>Subdomains (<code>&lt;name&gt;.b0-x.com</code>) and custom domains.</span></li>
+    <li><span class="tag ex">Stays put</span><span>Servers, serverless functions and databases. A Next.js app with API routes keeps those on Vercel (or wherever it runs). b0-x publishes the static half: pages, assets, the front end.</span></li>
   </ul>
 </div></section>
 <section style="border-bottom:0"><div class="wrap">${cta('<a class="btn ghost" href="/docs">Read the draft docs</a>')}</div></section>`,
 });
 
+const short = (o) => `${o.slice(0, 8)}…${o.slice(-6)}`;
 pages['storage'] = layout({
   path: '/storage', title: 'Storage · b0-x',
-  desc: 'b0-x hosts files in your own bStoreX bucket: S3/R2-compatible storage on our Hetzner servers, paid from your wallet by locking BSV or a monthly subscription. In development.',
-  body: `${hero('Storage · bStoreX', 'A bucket that<br>belongs to your <span class="gold">key</span>.', 'Hosting on b0-x sits on bStoreX, the storage layer of the bWalletX family. It runs on our own Hetzner servers and speaks the S3 API, so the tools you already use keep working.')}
+  desc: 'Where a b0-x site lives: on chain today, each file an inscription, served by the b0-x gateway. Off-chain hosting is planned and not built. Private files belong in bDriveX.',
+  body: `${hero('Storage', 'Where your<br>site <span class="gold">lives</span>.', 'Today a b0-x site lives on chain. Each file is an inscription, and the b0-x gateway serves them. Off-chain hosting is planned, not built.', '<span class="tag">Today · on chain</span> <span class="tag dev">Off chain · not built</span>')}
 <section><div class="wrap">
+  <p class="kicker">Today</p><h2>On chain.</h2>
   <div class="three">
-    <div class="card"><h3>Your own bucket</h3><p>Each wallet key gets its own bucket. Deploys write into it; the dashboard reads from it. You can also put anything else in it.</p></div>
-    <div class="card"><h3>S3 / R2 compatible</h3><p>Use the AWS CLI, rclone or any S3 SDK. Credentials are issued to your wallet key and can be revoked from the dashboard.</p></div>
-    <div class="card"><h3>Off chain, by design</h3><p>bStoreX is fast, cheap, normal storage. It's not permanent. Permanence is what <a class="gold" href="/publish">publishing</a> is for.</p></div>
+    <div class="card"><h3>Each file an inscription</h3><p>b0-x publishes a static site to Bitcoin SV. Each file is its own inscription, and an ORDFS directory maps paths to them.</p><p><a class="gold" href="/publish">Publishing →</a></p></div>
+    <div class="card"><h3>Served by the gateway</h3><p>The b0-x gateway serves published versions at <code>b0-x.com/s/&lt;name&gt;/</code>. ${Object.keys(REG).sort().map((n) => `<a class="gold" href="/s/${n}/">${n}</a>`).join(' and ')} are there now. Subdomains like <code>&lt;name&gt;.b0-x.com</code> are planned; DNS isn't set up.</p></div>
+    <div class="card"><h3>Permanent</h3><p>A published version can't be edited or taken down. A new version gets a new directory, and the name points at it. Old versions stay.</p></div>
   </div>
 </div></section>
 <section><div class="wrap split">
-  <div><p class="kicker">API sketch</p><h2>Standard S3 calls.</h2><p style="color:var(--ink2)">The endpoint and key format below are a sketch and will change before launch.</p><span class="tag draft">Draft</span></div>
-  <div style="min-width:0"><pre class="code"><span class="c"># AWS CLI, pointed at bStoreX (sketch)</span>
-export AWS_ACCESS_KEY_ID=bsx_xxxxxxxx
-export AWS_SECRET_ACCESS_KEY=your-secret-here
-aws s3 ls s3://my-sites/ \\
-  --endpoint-url https://s3.bstorex.com
-
-aws s3 sync ./out s3://my-sites/my-docs/ \\
-  --endpoint-url https://s3.bstorex.com</pre>
-<pre class="code"><span class="c">// JavaScript, @aws-sdk/client-s3 (sketch)</span>
-const s3 = new S3Client({
-  region: 'auto',
-  endpoint: 'https://s3.bstorex.com',
-  credentials: { accessKeyId, secretAccessKey },
-});</pre></div>
+  <div><p class="kicker">Names point at versions</p><h2>The gateway registry.</h2><p style="color:var(--ink2)">Each name points at one on-chain directory, its current version. These are the real entries today.</p></div>
+  <div style="min-width:0"><pre class="code"><span class="c"># name → current version (ORDFS directory)</span>
+${Object.entries(REG).sort(([a], [b]) => a.localeCompare(b)).map(([n, v]) => `${n.padEnd(10)} → v${v.versions.length}  ${short(v.current)}`).join('\n')}</pre></div>
 </div></section>
 <section><div class="wrap">
-  <p class="kicker">Paying for it</p><h2>Lock or subscribe.</h2>
+  <p class="kicker">Planned</p><h2>Off-chain hosting. <span class="tag dev">Not built</span></h2>
   <div class="grid2">
-    <div class="card"><h3>Lock BSV for a term</h3><p>Lock an amount of BSV in your own wallet for, say, 3 or 12 months. The lock pays for a storage allowance. At the end of the term the BSV unlocks back to you, less the storage fee.</p><p class="small">The coins never leave your wallet's control; the lock is a time-locked output you own.</p></div>
-    <div class="card"><h3>Monthly subscription</h3><p>Or pay a small amount each month straight from your wallet. Stop paying and your bucket is kept read-only for a grace period, then cleared.</p><p class="small">Anything you published on chain is unaffected; it lives on Bitcoin, not in the bucket.</p></div>
+    <div class="card"><h3>What it's for</h3><p>Previews, and heavy media that shouldn't go on chain. Normal storage, not permanent.</p></div>
+    <div class="card"><h3>Where it stands</h3><p>Not built yet. We haven't chosen the storage service. No prices until it's real. The plan is to pay monthly from your wallet.</p><p class="small">Anything you publish on chain won't depend on it.</p></div>
   </div>
-  <h3 style="margin-top:36px">Pricing model</h3>
-  <p style="color:var(--ink2)">Priced by GB stored per month, at or near our cost. Bandwidth for normal sites is included. Final per-GB prices will be published before launch; we won't put a number here until it's real.</p>
 </div></section>
-<section style="border-bottom:0"><div class="wrap">${cta('<a class="btn ghost" href="/pricing">See pricing</a>')}</div></section>`,
+<section><div class="wrap">
+  <p class="kicker">Private files</p><h2>That's bDriveX.</h2>
+  <div class="prose"><p><a class="gold" href="https://bdrivex.com">bDriveX</a> is the bWalletX family's drive for private files. Files are encrypted on your device before upload; the server holds only ciphertext. You share with a link only the people you choose can open.</p>
+  <p>It's an invite-only beta, and there are no backups yet. It isn't web hosting: it can't serve a public website.</p>
+  <p class="small">bStoreX, at bstorex.com, is the bWalletX store (themes and packs). It isn't storage.</p></div>
+</div></section>
+<section style="border-bottom:0"><div class="wrap">${cta('<a class="btn ghost" href="/publish">How publishing works</a>')}</div></section>`,
 });
 
 const pubEx = [
@@ -296,7 +292,7 @@ const pubEx = [
 pages['publish'] = layout({
   path: '/publish', title: 'Publish on chain · b0-x',
   desc: 'Publish any version of your site to Bitcoin as a website ordinal: an ORDFS ord-fs/json directory where each file is an inscription. New version, new manifest. In development.',
-  body: `${hero('Publish', 'Versions that<br><span class="gold">stay</span>.', 'Hosting is for today. Publishing is for good. Pick any build and b0-x writes it to Bitcoin SV as a website ordinal you own, served through ORDFS.')}
+  body: `${hero('Publish', 'Versions that<br><span class="gold">stay</span>.', 'Publishing is for good. Pick a build and b0-x writes it to Bitcoin SV as a website ordinal, served through ORDFS and the b0-x gateway.')}
 <section><div class="wrap split">
   <div><p class="kicker">How a version is stored</p><h2>A directory of inscriptions.</h2>
   <div class="prose"><p>Each file in your build is inscribed as its own ordinal with its content type. Then one more inscription, the manifest, lists them: an <code>ord-fs/json</code> directory that maps paths to inscriptions.</p>
@@ -320,7 +316,7 @@ pages['publish'] = layout({
 <section><div class="wrap">
   <p class="kicker">Permanence</p><h2>What "for good" means.</h2>
   <div class="prose"><p>Once a version is inscribed it is part of the Bitcoin SV ledger. We can't edit it or take it down, and neither can anyone else. That's the point, and it's also the warning: <b style="color:var(--ink)">don't publish secrets, private data, or anything you don't have the rights to.</b> b0-x will scan builds for obvious keys and <code>.env</code> files before it asks you to confirm.</p>
-  <p>Hosted copies in bStoreX can be deleted at any time. On-chain versions can't.</p></div>
+  <p>A copy on a normal web host can be deleted at any time. On-chain versions can't.</p></div>
 </div></section>
 <section><div class="wrap">
   <p class="kicker">Cost examples</p><h2>About ${SAT_PER_KB} sats per kB.</h2>
@@ -352,7 +348,7 @@ $ npx b0-x names point my-docs v3   <span class="c"># roll back</span>
   <div class="three">
     <div class="card"><h3>Yours to hold</h3><p>The name is an ordinal in your wallet. You can keep it, transfer it or sell it like any other.</p></div>
     <div class="card"><h3>Roll back in one step</h3><p>Every version stays on chain, so rolling back is just pointing the name at an earlier one.</p></div>
-    <div class="card"><h3>Alongside DNS</h3><p>Your normal domain can keep serving the hosted copy from bStoreX. The OpNS name is the on-chain route to the published one.</p></div>
+    <div class="card"><h3>Alongside DNS</h3><p>Your normal domain keeps serving your site from wherever it's hosted now. The OpNS name is the on-chain route to the published one.</p></div>
   </div>
   <p class="small" style="margin-top:18px">Registering names uses OpNS directly; b0-x will help you claim and point one, but doesn't own the name system.</p>
 </div></section>
@@ -362,28 +358,28 @@ $ npx b0-x names point my-docs v3   <span class="c"># roll back</span>
 const priceEx = [
   ['Small site', 'Landing page plus a few pages, light images', 2150, 'v1 publish, then occasional small updates'],
   ['Docs site', '120 pages, search index, diagrams', 6000, 'Updates touch a few pages at a time'],
-  ['Image-heavy site', 'Portfolio with full-size photos', 60 * 1024, 'Consider hosting images on bStoreX and publishing only the pages'],
+  ['Image-heavy site', 'Portfolio with full-size photos', 60 * 1024, 'The photos are most of the cost; compress them first'],
 ];
 pages['pricing'] = layout({
   path: '/pricing', title: 'Pricing · b0-x',
-  desc: 'b0-x pricing is at cost: bStoreX hosting by locking BSV or a monthly subscription, and on-chain publishing at about 100 sats per kB. Worked examples. Early access.',
-  body: `${hero('Pricing · at cost', 'Pay for what<br>you <span class="gold">use</span>.', 'No seats, no plans, no card. Hosting and publishing are paid from your wallet, priced at or near what they cost us.', '<span class="tag dev">Early access · prices are estimates</span>')}
+  desc: 'b0-x pricing is at cost: on-chain publishing at about 100 sats per kB, with worked examples. Off-chain hosting is not built and has no price yet. Early access.',
+  body: `${hero('Pricing · at cost', 'Pay for what<br>you <span class="gold">use</span>.', 'No seats, no card. Publishing on chain is priced at what it costs us. Off-chain hosting isn\'t built, so it has no price.', '<span class="tag dev">Early access · prices are estimates</span>')}
 <section><div class="wrap">
   <div class="three price">
     <div class="card"><span class="small">Sign-in</span><b>Free</b><p>Sign in with bWalletX. No account, no password, no email.</p></div>
-    <div class="card"><span class="small">Hosting on bStoreX</span><b>Per GB / month</b><p>Lock BSV for a term (refunded at the end, less the fee) or subscribe monthly. Previews included. Final per-GB price published before launch.</p></div>
+    <div class="card"><span class="small">Hosting off chain</span><b>Not built</b><p>Planned, for previews and heavy media. We haven't chosen the storage service, so there's no price. The plan is to pay monthly from your wallet.</p></div>
     <div class="card"><span class="small">Publishing on chain</span><b>~${SAT_PER_KB} sats / kB</b><p>Cost price, once per version. Updates pay for changed files plus a small manifest.</p></div>
   </div>
 </div></section>
 <section><div class="wrap">
   <p class="kicker">Worked examples</p><h2>What publishing costs.</h2>
-  <p style="color:var(--ink2)">At ~${SAT_PER_KB} sats per kB. One-off cost for a full version; storage hosting is separate.</p>
+  <p style="color:var(--ink2)">At ~${SAT_PER_KB} sats per kB. One-off cost for a full version.</p>
   <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Site</th><th>Contents</th><th class="num">Size</th><th class="num">Full version</th><th>Note</th></tr></thead><tbody>
   ${priceEx.map(([a, b, kb, n]) => `<tr><td><b style="color:var(--ink)">${a}</b></td><td>${b}</td><td class="num">${(kb / 1024).toFixed(1)} MB</td><td class="num">~${fmt(sats(kb))} sats<br><span class="small">${bsv(sats(kb))} BSV</span></td><td>${n}</td></tr>`).join('')}
   </tbody></table></div>
   <div class="grid2">
     <div class="card"><h3>The maths</h3><p>Size in kB × ${SAT_PER_KB} sats. A 2.1 MB site is about 2,150 kB, so about ${fmt(sats(2150))} sats (${bsv(sats(2150))} BSV).</p></div>
-    <div class="card"><h3>Keeping it down</h3><p>Compress images, drop source maps, and publish pages while heavy media stays on bStoreX. b0-x shows the size of every file before you confirm.</p></div>
+    <div class="card"><h3>Keeping it down</h3><p>Compress images and drop source maps. b0-x shows the size of every file before you confirm.</p></div>
   </div>
   <p class="small" style="margin-top:16px">All figures are estimates for illustration. You see the exact cost before anything is written, and nothing is charged during early access.</p>
 </div></section>
@@ -392,12 +388,29 @@ pages['pricing'] = layout({
 
 pages['docs'] = layout({
   path: '/docs', title: 'Docs (draft) · b0-x',
-  desc: 'Draft docs for b0-x: getting started, a CLI reference sketch and the b0x.json config file. Everything here is a design draft and will change.',
-  body: `${hero('Docs', 'Draft <span class="gold">docs</span>.', 'How b0-x is meant to work, written down early so developers can tell us what\'s wrong with it. None of these commands exist yet.', '<span class="tag draft">Draft · not implemented</span>')}
+  desc: 'Docs for b0-x: the publisher that works today (pnpm publish-site), then draft docs for the planned b0-x CLI and b0x.json config, which will change.',
+  body: `${hero('Docs', 'Draft <span class="gold">docs</span>.', 'How b0-x is meant to work, written down early so developers can tell us what\'s wrong with it. The publisher at the top works today. The <code>b0-x</code> commands below it don\'t exist yet.', '<span class="tag">Publisher · works today</span> <span class="tag draft">b0-x CLI · draft, not implemented</span>')}
 <section><div class="wrap docs">
-<aside aria-label="On this page"><a href="#start">Getting started</a><a href="#cli">CLI reference</a><a href="#config">b0x.json</a><a href="#limits">Limits</a></aside>
+<aside aria-label="On this page"><a href="#today">Publishing today</a><a href="#start">Getting started</a><a href="#cli">CLI reference</a><a href="#config">b0x.json</a><a href="#limits">Limits</a></aside>
 <div class="prose" style="min-width:0">
-<h2 id="start">Getting started</h2>
+<h2 id="today">Publishing today <span class="tag">Works today</span></h2>
+<p>This is the publisher we use now. It's in the b0-x site's repo (<code>tools/publish</code>) and publishes a built static folder on chain: each file an inscription, plus an ORDFS directory. The gateway then serves it at <code>b0-x.com/s/&lt;name&gt;/</code>.</p>
+<pre class="code">$ pnpm publish-site &lt;dir&gt; [--name x] [--owner &lt;pubkey&gt;] [--source &lt;domain&gt;]
+    [--fee 100] [--relative] [--max-tx-mb 9.5] [--broadcast]</pre>
+<p>It's a dry run by default. It lists every file and its size, flags links that would break on ORDFS, and prints the fee. Nothing is broadcast.</p>
+<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Flag</th><th>What it does</th></tr></thead><tbody>
+<tr><td><code>&lt;dir&gt;</code></td><td>The built site folder.</td></tr>
+<tr><td><code>--name x</code></td><td>The name in the gateway. Defaults to the folder name, without a trailing <code>-site</code>.</td></tr>
+<tr><td><code>--owner &lt;pubkey&gt;</code></td><td>The owner's identity public key (66 hex characters). New names only.</td></tr>
+<tr><td><code>--source &lt;domain&gt;</code></td><td>The site's own domain, recorded with the name.</td></tr>
+<tr><td><code>--fee 100</code></td><td>Fee rate in sats per kB. Default 100.</td></tr>
+<tr><td><code>--relative</code></td><td>Rewrites root-absolute links (like <code>/app.css</code>) to relative ones, so they work on ORDFS.</td></tr>
+<tr><td><code>--max-tx-mb 9.5</code></td><td>The largest transaction, in MB. A file bigger than this can't be published.</td></tr>
+<tr><td><code>--broadcast</code></td><td>Broadcasts the plan saved by the dry run, then records the new version in the gateway and points the name at it. Owner only: it signs with b0-x's publishing key.</td></tr>
+</tbody></table></div>
+<p>Try it without the CLI: <a class="gold" href="/new">New project</a> checks a folder in your browser the same way.</p>
+
+<h2 id="start">Getting started <span class="tag draft">Sketch</span></h2>
 <p>You need bWalletX (web, Chrome extension or phone app) or another BRC-100 wallet, and a project whose build produces static files.</p>
 <h3>1. Sign in</h3>
 <pre class="code">$ npx b0-x login
@@ -406,8 +419,8 @@ pages['docs'] = layout({
 <p>The CLI asks your wallet to sign a one-off challenge. No password, no API token to copy around.</p>
 <h3>2. Deploy</h3>
 <pre class="code">$ cd my-site
-$ npx b0-x deploy            <span class="c"># builds, uploads, gives a preview URL</span>
-$ npx b0-x deploy --prod     <span class="c"># promote to production on bStoreX</span></pre>
+$ npx b0-x deploy            <span class="c"># builds and checks the output</span></pre>
+<p>Off-chain hosting and preview URLs are planned, not built. We haven't chosen the storage service.</p>
 <h3>3. Publish and name (optional)</h3>
 <pre class="code">$ npx b0-x publish           <span class="c"># inscribe this build as the next version</span>
 $ npx b0-x names point my-site latest</pre>
@@ -417,11 +430,10 @@ $ npx b0-x names point my-site latest</pre>
 <tr><td><code>b0-x login</code></td><td>Sign in with bWalletX (BRC-100).</td></tr>
 <tr><td><code>b0-x logout</code></td><td>Forget the local session.</td></tr>
 <tr><td><code>b0-x link [--vercel|--github]</code></td><td>Link this folder to a Vercel project or GitHub repo.</td></tr>
-<tr><td><code>b0-x deploy [--prod]</code></td><td>Build and upload to bStoreX. Prints a preview URL, or updates production.</td></tr>
+<tr><td><code>b0-x deploy</code></td><td>Build the static output and check it.</td></tr>
 <tr><td><code>b0-x publish [--dry-run]</code></td><td>Inscribe the current build as a new version. <code>--dry-run</code> prints files, sizes and cost without writing.</td></tr>
 <tr><td><code>b0-x versions</code></td><td>List on-chain versions with their manifest outpoints.</td></tr>
 <tr><td><code>b0-x names point &lt;name&gt; &lt;version&gt;</code></td><td>Point an OpNS name you own at a version.</td></tr>
-<tr><td><code>b0-x storage [ls|usage|pay]</code></td><td>Inspect your bucket and pay for storage (lock or subscribe).</td></tr>
 </tbody></table></div>
 
 <h2 id="config">b0x.json <span class="tag draft">Sketch</span></h2>
@@ -429,7 +441,6 @@ $ npx b0-x names point my-site latest</pre>
 <pre class="code">{
   "name": "my-docs",
   "build": { "command": "pnpm build", "output": "out" },
-  "hosting": { "bucket": "my-sites", "prefix": "my-docs/" },
   "publish": {
     "include": ["**/*"],
     "exclude": ["**/*.map", "drafts/**"],
@@ -444,7 +455,7 @@ $ npx b0-x names point my-site latest</pre>
 <ul>
 <li>Static output only. API routes, serverless functions and databases stay on their current host.</li>
 <li>Single-page apps need a fallback route; the config for that isn't designed yet.</li>
-<li>Very large media is better kept on bStoreX than published.</li>
+<li>A file too big for one transaction can't be published. Off-chain hosting for heavy media is planned, not built.</li>
 </ul>
 </div></div></section>`,
 });
@@ -473,17 +484,18 @@ pages['new'] = layout({
 
 pages['about'] = layout({
   path: '/about', title: 'About · b0-x',
-  desc: 'b0-x is a b0ase.com product in the bWalletX family: developer hosting on bStoreX, on-chain publishing with bWebX, names with OpNS. Early access.',
+  desc: 'b0-x is a b0ase.com product in the bWalletX family: on-chain publishing for websites, served by the b0-x gateway. Off-chain hosting is planned. Early access.',
   body: `${hero('About', 'Built by <span class="gold">b0ase</span>,<br>for developers.', 'b0-x is the developer front door to the bWalletX family: the place to bring a project you already have and put it on Bitcoin.')}
 <section><div class="wrap split">
-  <div><p class="kicker">Where it fits</p><h2>One family, one wallet.</h2><p style="color:var(--ink2)">b0-x is built by <a class="gold" href="https://b0ase.com">b0ase.com</a>, the studio behind the bWalletX family. It doesn't reinvent storage, minting or wallets. It ties them together for one job: deploying websites.</p></div>
+  <div><p class="kicker">Where it fits</p><h2>One family, one wallet.</h2><p style="color:var(--ink2)">b0-x is built by <a class="gold" href="https://b0ase.com">b0ase.com</a>, the studio behind the bWalletX family. It doesn't reinvent minting or wallets. It ties them together for one job: deploying websites.</p></div>
   <div class="grid2" style="margin-top:0">
     <div class="card"><h3>bWalletX</h3><p>Our BRC-100 wallet. Your sign-in and how you pay. Any BRC-100 wallet works.</p></div>
-    <div class="card"><h3>bStoreX</h3><p>S3-compatible storage on our Hetzner servers. Where hosted sites live.</p></div>
+    <div class="card"><h3>bStoreX</h3><p>The bWalletX store: themes and packs. Not storage.</p></div>
+    <div class="card"><h3>bDriveX</h3><p>Private files, encrypted on your device before upload. Invite-only beta, no backups yet. Not web hosting.</p></div>
     <div class="card"><h3>bWebX</h3><p>Mints websites on chain. b0-x publishes through it.</p></div>
     <div class="card"><h3>bMintX</h3><p>Minting for everything else: media, collections, tokens.</p></div>
     <div class="card"><h3>OpNS</h3><p>The on-chain name system b0-x uses to name versions.</p></div>
-    <div class="card"><h3>b0-x</h3><p>The developer workflow: import, build, host, publish, name.</p></div>
+    <div class="card" style="grid-column:1/-1"><h3>b0-x</h3><p>The developer workflow. Publishing on chain works today. Import, build, off-chain hosting and OpNS names are planned.</p></div>
   </div>
 </div></section>
 <section><div class="wrap">

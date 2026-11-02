@@ -57,7 +57,7 @@ function render({ name, files, skipped, refs }) {
   </div>
   ${!files.length ? '<p class="warn">Nothing publishable in that folder.</p>' : ''}
   ${files.length && !hasIndex ? '<p class="warn">No <code>index.html</code> at the top of the folder. Drop the built output folder (e.g. <code>dist/</code> or <code>out/</code>).</p>' : ''}
-  ${est.tooBig.length ? `<p class="warn">Too large for one transaction: ${est.tooBig.map(esc).join(', ')}. Host big media on bStoreX and link to it.</p>` : ''}
+  ${est.tooBig.length ? `<p class="warn">Too large for one transaction: ${est.tooBig.map(esc).join(', ')}. Compress it or leave it out. Off-chain hosting for big media is planned, not built.</p>` : ''}
   ${uniq.length ? `<div class="card nwarn"><h3>Root-absolute links (${uniq.length})</h3><p>On chain the site lives under <code>/content/&lt;outpoint&gt;/</code>, so links starting with <code>/</code> will break. The CLI's <code>--relative</code> flag rewrites the ones that point at your own files.${uniq.some((r) => r.kind === 'api') ? ' <b>/api/*</b> calls cannot be fixed: serverless functions are not published.' : ''}</p>
     <ul class="nrefs">${uniq.slice(0, 40).map((r) => `<li><span class="chip ${r.kind === 'api' ? 'p' : 'v'}">${esc(r.kind)}</span> <code>${esc(r.ref)}</code> <span class="small">in ${esc(r.file)}</span></li>`).join('')}${uniq.length > 40 ? `<li class="small">…and ${uniq.length - 40} more</li>` : ''}</ul></div>` : (files.length ? '<p class="small ok">✓ No root-absolute links found.</p>' : '')}
   <div class="ctas" style="margin:22px 0 6px"><span class="soon" title="Coming soon: wallet-signed deploys" tabindex="0"><button class="btn gb" type="button" disabled aria-disabled="true">Deploy with bWalletX (beta)</button></span></div>

@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Deploy · b0-x</title>
-<meta name="description" content="Import a Vercel project or GitHub repo into b0-x: build, preview URLs and hosting on bStoreX. What works first and what comes later. In development.">
+<meta name="description" content="How deploys into b0-x will work: import a Vercel project or GitHub repo, build the static output, publish it on chain. What works today and what comes later. In development.">
 <link rel="canonical" href="https://b0-x.com/deploy">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://b0-x.com/deploy">
 <meta property="og:site_name" content="b0-x">
 <meta property="og:title" content="Deploy · b0-x">
-<meta property="og:description" content="Import a Vercel project or GitHub repo into b0-x: build, preview URLs and hosting on bStoreX. What works first and what comes later. In development.">
-<meta property="og:image" content="https://b0-x.com/og-b0x-v1.png">
+<meta property="og:description" content="How deploys into b0-x will work: import a Vercel project or GitHub repo, build the static output, publish it on chain. What works today and what comes later. In development.">
+<meta property="og:image" content="https://b0-x.com/og-b0x-v2.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Deploy · b0-x">
-<meta name="twitter:description" content="Import a Vercel project or GitHub repo into b0-x: build, preview URLs and hosting on bStoreX. What works first and what comes later. In development.">
-<meta name="twitter:image" content="https://b0-x.com/og-b0x-v1.png">
+<meta name="twitter:description" content="How deploys into b0-x will work: import a Vercel project or GitHub repo, build the static output, publish it on chain. What works today and what comes later. In development.">
+<meta name="twitter:image" content="https://b0-x.com/og-b0x-v2.png">
 <meta name="theme-color" content="#050506">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,40 +49,42 @@
 </header>
 <main id="main">
 <section class="page-hero"><div class="wrap">
-<p class="eyebrow">Deploy</p><h1 class="h1s">From Vercel or GitHub<br>to <span class="gold">Bitcoin</span>.</h1><p class="lede">Point b0-x at a project you already have. It builds the static output, uploads it to your bStoreX bucket and gives you a preview URL. Publishing on chain is a separate, deliberate step.</p><span class="tag dev">In development</span></div></section>
+<p class="eyebrow">Deploy</p><h1 class="h1s">From Vercel or GitHub<br>to <span class="gold">Bitcoin</span>.</h1><p class="lede">Point b0-x at a project you already have. It builds the static output, and you choose whether to publish it on chain. Import and builds are planned; publishing works today.</p><span class="tag dev">In development</span></div></section>
 <section><div class="wrap split">
-  <div><p class="kicker">Import</p><h2>Two ways in.</h2><p class="prose" style="color:var(--ink2)">You sign in with bWalletX, then link the source you already use. b0-x reads the project; it does not take it over. Your Vercel project and GitHub repo stay exactly where they are.</p></div>
+  <div><p class="kicker">Import</p><h2>Two ways in. <span class="tag dev">Later</span></h2><p class="prose" style="color:var(--ink2)">You sign in with bWalletX, then link the source you already use. b0-x reads the project; it does not take it over. Your Vercel project and GitHub repo stay exactly where they are.</p></div>
   <div class="grid2" style="margin-top:0">
     <div class="card"><h3>From Vercel</h3><p>Link your Vercel account with a read-only token, pick a project, and b0-x pulls the build settings it can use: framework, output directory, build command.</p></div>
-    <div class="card"><h3>From GitHub</h3><p>Install the b0-x GitHub app on a repo. Pushes to the branch you choose trigger a build; other branches get previews.</p></div>
-    <div class="card"><h3>From your machine</h3><p>Or skip both: <code>npx b0-x deploy</code> in a folder uploads its built output directly.</p></div>
-    <div class="card"><h3>Your key signs it</h3><p>Every deploy is tied to your wallet key, so the dashboard, buckets and names all belong to you, not to an account we hold.</p></div>
+    <div class="card"><h3>From GitHub</h3><p>Install the b0-x GitHub app on a repo. Pushes to the branch you choose trigger a build. Previews for other branches need off-chain hosting, which isn't built.</p></div>
+    <div class="card"><h3>From your machine</h3><p>Or skip both and point b0-x at a built folder. Today that's the publisher, <code>pnpm publish-site &lt;dir&gt;</code>. See the <a class="gold" href="/docs#today">docs</a>.</p></div>
+    <div class="card"><h3>Your key signs it</h3><p>Every deploy is tied to your wallet key, so the dashboard, versions and names all belong to you, not to an account we hold.</p></div>
   </div>
 </div></section>
 <section><div class="wrap">
   <p class="kicker">Build</p><h2>Build, then upload the output.</h2>
   <p style="color:var(--ink2)">b0-x runs your build command in a clean container and keeps only the static output: HTML, CSS, JS, images, fonts. That output is what gets hosted and, if you choose, published.</p>
-  <pre class="code"><span class="c"># illustrative</span>
+  <pre class="code"><span class="c"># illustrative: this command doesn't exist yet</span>
 $ npx b0-x deploy
 → Detected: Next.js (static export) · output: out/
 → Running: pnpm build
 → 37 files · 4.2 MB
-<span class="o">✓ preview at https://my-docs-git-feature-x.b0-x.app</span></pre>
+<span class="o">✓ built. Publish it on chain?</span></pre>
   <div class="three">
-    <div class="card"><h3>Preview URLs</h3><p>Every build gets its own URL on <code>b0-x.app</code>. Share it, check it, throw it away. Previews live in bStoreX only and are never written on chain.</p></div>
-    <div class="card"><h3>Production</h3><p>Promote a build to production and your custom domain or b0-x URL serves it from bStoreX.</p></div>
-    <div class="card"><h3>Publish</h3><p>Any build, preview or production, can be <a class="gold" href="/publish">published on chain</a> as a numbered version.</p></div>
+    <div class="card"><h3>Preview URLs <span class="tag dev">Later</span></h3><p>A throwaway URL for each build, never written on chain. Not built: previews need off-chain hosting, and we haven't chosen the storage service.</p></div>
+    <div class="card"><h3>Serving</h3><p>Today the b0-x gateway serves published versions at <code>b0-x.com/s/&lt;name&gt;/</code>. Subdomains like <code>&lt;name&gt;.b0-x.com</code> are planned; DNS isn't set up.</p></div>
+    <div class="card"><h3>Publish</h3><p>A build can be <a class="gold" href="/publish">published on chain</a> as a numbered version. A name points at the version you choose.</p></div>
   </div>
 </div></section>
 <section><div class="wrap">
-  <p class="kicker">Honest scope</p><h2>What works first, what comes later.</h2>
-  <p style="color:var(--ink2)">Nothing is live yet. This is the order we plan to build in.</p>
+  <p class="kicker">Honest scope</p><h2>What works today, what comes later.</h2>
+  <p style="color:var(--ink2)">One thing works today. The rest is the order we plan to build in.</p>
   <ul class="status">
-    <li><span class="tag">First</span><span>Static sites: plain HTML, Vite, Astro, Next.js static export, docs generators (Docusaurus, VitePress, MkDocs). Upload, preview, production on bStoreX, publish on chain, OpNS names.</span></li>
+    <li><span class="tag">Today</span><span>Publishing a static site on chain with the CLI (<code>pnpm publish-site</code>): each file an inscription, plus an ORDFS directory. The gateway serves it at <code>b0-x.com/s/&lt;name&gt;/</code>. bfriendsx and bvideox are published.</span></li>
+    <li><span class="tag">First</span><span>Static sites: plain HTML, Vite, Astro, Next.js static export, docs generators (Docusaurus, VitePress, MkDocs). Build, publish on chain, OpNS names.</span></li>
     <li><span class="tag">First</span><span>Sign-in and payment with bWalletX (BRC-100), so any BRC-100 wallet works.</span></li>
     <li><span class="tag dev">Later</span><span>GitHub push-to-deploy and branch previews; Vercel project import with build-setting detection.</span></li>
-    <li><span class="tag dev">Later</span><span>Custom domains on hosted (bStoreX) versions.</span></li>
-    <li><span class="tag ex">Stays put</span><span>Servers, serverless functions and databases. A Next.js app with API routes keeps those on Vercel (or wherever it runs). b0-x hosts and publishes the static half: pages, assets, the front end.</span></li>
+    <li><span class="tag dev">Later</span><span>Off-chain hosting for previews and heavy media. Not built; no storage service chosen.</span></li>
+    <li><span class="tag dev">Later</span><span>Subdomains (<code>&lt;name&gt;.b0-x.com</code>) and custom domains.</span></li>
+    <li><span class="tag ex">Stays put</span><span>Servers, serverless functions and databases. A Next.js app with API routes keeps those on Vercel (or wherever it runs). b0-x publishes the static half: pages, assets, the front end.</span></li>
   </ul>
 </div></section>
 <section style="border-bottom:0"><div class="wrap"><div class="ctas"><button class="btn gb" type="button" data-ea-connect>Connect bWalletX to join early access</button><a class="btn ghost" href="/docs">Read the draft docs</a></div>
@@ -95,7 +97,7 @@ $ npx b0-x deploy
     <div><h4>Developers</h4><a href="/docs">Docs (draft)</a><a href="/dashboard">Dashboard</a><a href="/new">New project</a><a href="/about">About</a></div>
     <div><h4>bWalletX family</h4><a href="https://bwalletx.com/b-family">Part of the bWalletX family</a><a href="https://bwalletx.com">bWalletX</a><a href="https://bstorex.com">bStoreX</a><a href="https://bwebx.com">bWebX</a><a href="https://bmintx.com">bMintX</a><a href="https://b0ase.com">b0ase.com</a></div>
   </div>
-  <p class="fine">b0-x · part of the bWalletX family · built on bStoreX · publishes with bWebX · runs on Bitcoin SV. The CLI and config shown on this site are sketches of the planned design and may change.</p>
+  <p class="fine">b0-x · part of the bWalletX family · publishes with bWebX · runs on Bitcoin SV. The CLI and config shown on this site are sketches of the planned design and may change.</p>
 </footer>
 <script src="https://unpkg.com/@bwalletx/connect@0.5.0/dist/bwalletx-connect.global.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
