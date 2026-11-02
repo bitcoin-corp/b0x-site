@@ -151,6 +151,8 @@ pages['index'] = layout({
   tail: '<script src="/home.js"></script>',
   body: `<section class="hx-sites" id="sites" aria-roledescription="carousel" aria-label="b*X sites">
   <p class="hx-kick">Pick a site</p>
+  <div class="hx-search"><input type="search" id="hx-q" placeholder="Search ${gallery.length} sites" aria-label="Search sites by name, domain or what they do" autocomplete="off" spellcheck="false"><kbd aria-hidden="true">/</kbd></div>
+  <p class="hx-nomatch" role="status" hidden>No site matches “<span data-q></span>”.</p>
   <div class="hx-filters" role="group" aria-label="Show">${FILTERS.map(([f, t]) => `<button type="button" data-f="${f}" aria-pressed="${f === 'all'}"${count(f) ? '' : ' disabled'}>${t}<b data-fc="${f}">${count(f)}</b></button>`).join('')}</div>
   <div class="hx-flow" tabindex="0" aria-label="Sites. Use the left and right arrow keys.">
     ${gallery.map(card).join('\n    ')}

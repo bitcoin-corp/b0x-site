@@ -109,14 +109,36 @@
     wheelEnd = setTimeout(() => go(Math.round(cur + drag)), 120);
   }, { passive: false });
 
+  // Search (owner, 2 Nov 2026): narrows the carousel and the shelf together, by name, domain or tagline.
+  const qBox = document.getElementById('hx-q');
+  const noMatch = document.querySelector('.hx-nomatch');
+  let q = '';
+  const matches = (s) => !q || `${s.name} ${s.domain} ${s.line}`.toLowerCase().includes(q);
+  function shelf() {
+    document.querySelectorAll('.hx-tile[data-d]').forEach((t) => { t.hidden = !matches(all.find((s) => s.domain === t.dataset.d) || {}); });
+    document.querySelectorAll('[data-group]').forEach((g) => { g.hidden = !g.querySelector('.hx-tile:not([hidden])'); });
+  }
+  function apply() {
+    set = all.map((_, i) => i).filter((i) => inFilter(all[i], filter) && matches(all[i]));
+    cur = 0; drag = 0;
+    const none = !set.length;
+    flow.hidden = none; info.hidden = none;
+    noMatch.hidden = !none;
+    if (none) noMatch.querySelector('[data-q]').textContent = qBox.value.trim();
+    else { measure(); show(); }
+    shelf();
+  }
   const filters = [...document.querySelectorAll('.hx-filters [data-f]')];
   filters.forEach((b) => b.addEventListener('click', () => {
     filter = b.dataset.f;
     filters.forEach((x) => x.setAttribute('aria-pressed', x === b));
-    set = all.map((_, i) => i).filter((i) => inFilter(all[i], filter));
-    cur = 0; drag = 0;
-    measure(); show();
+    apply();
   }));
+  qBox.addEventListener('input', () => { q = qBox.value.trim().toLowerCase(); apply(); });
+  qBox.addEventListener('keydown', (e) => { if (e.key === 'Escape') { qBox.value = ''; q = ''; apply(); } });
+  addEventListener('keydown', (e) => {
+    if (e.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) { e.preventDefault(); qBox.focus(); }
+  });
 
   addEventListener('resize', measure);
   measure();
@@ -147,6 +169,7 @@
     });
     const t = new Date(j.checked);
     const el = document.querySelector('[data-checked]');
+    shelf();
     if (el && !isNaN(t)) el.textContent = `Status checked live at ${t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
     show();
   }).catch(() => {});
