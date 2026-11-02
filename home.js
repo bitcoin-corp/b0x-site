@@ -42,6 +42,7 @@
       c.classList.toggle('on', k === cur && !drag);
       c.classList.toggle('nodur', !!drag);
       c.toggleAttribute('aria-hidden', k !== cur);
+      c.tabIndex = k === cur ? 0 : -1;
     });
   }
 
@@ -71,10 +72,8 @@
     if (e.key === 'ArrowLeft') { go(cur - 1); e.preventDefault(); }
     else if (e.key === 'ArrowRight') { go(cur + 1); e.preventDefault(); }
   });
-  cards.forEach((c, idx) => c.addEventListener('click', () => {
-    const k = set.indexOf(idx);
-    if (!st.moved && k >= 0 && k !== cur) go(k);
-  }));
+  // Every card is a link to its site (new tab); a drag or swipe isn't a click.
+  cards.forEach((c) => c.addEventListener('click', (e) => { if (st.moved) e.preventDefault(); }));
 
   // Swipe / drag; vertical page scroll stays native via touch-action: pan-y.
   const st = { down: false, moved: false, x: 0, y: 0 };

@@ -216,6 +216,8 @@ footer.site{padding:48px 0 40px;color:var(--mute);font-size:14px}
 .hx-flow:focus-visible{outline-offset:-4px}
 .hx-card{position:absolute;left:50%;top:28px;width:var(--cw);margin-left:calc(var(--cw)/-2);transition:transform .5s var(--ease),opacity .5s var(--ease),filter .5s var(--ease);will-change:transform;backface-visibility:hidden;cursor:pointer}
 .hx-card.nodur{transition:none}
+a.hx-card{color:inherit;text-decoration:none;-webkit-user-drag:none}
+a.hx-card:focus-visible{outline:none}a.hx-card:focus-visible .hx-win{box-shadow:0 0 0 3px var(--gold)}
 .hx-win{position:relative;border-radius:16px;overflow:hidden;background:#0b0b0c;box-shadow:0 30px 60px -20px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.1);pointer-events:none;transition:box-shadow .3s var(--ease)}
 .hx-card.on .hx-win{box-shadow:0 40px 90px -24px rgba(255,210,77,.35),0 0 0 2px var(--c);box-shadow:0 40px 90px -24px color-mix(in srgb,var(--c) 55%,transparent),0 0 0 2px var(--c)}
 .hx-bar{display:flex;align-items:center;gap:6px;height:30px;padding:0 12px;background:#111214;border-bottom:1px solid #1d1d1f}
