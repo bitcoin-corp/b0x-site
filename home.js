@@ -99,6 +99,17 @@
   flow.addEventListener('pointerup', up);
   flow.addEventListener('pointercancel', up);
 
+  // Magic Mouse / trackpad: horizontal scroll follows the finger, then snaps to the nearest site.
+  let wheelEnd;
+  flow.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    e.preventDefault();
+    drag += e.deltaX / (cw * 0.6);
+    place();
+    clearTimeout(wheelEnd);
+    wheelEnd = setTimeout(() => go(Math.round(cur + drag)), 120);
+  }, { passive: false });
+
   const filters = [...document.querySelectorAll('.hx-filters [data-f]')];
   filters.forEach((b) => b.addEventListener('click', () => {
     filter = b.dataset.f;

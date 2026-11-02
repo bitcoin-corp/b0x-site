@@ -212,7 +212,7 @@ footer.site{padding:48px 0 40px;color:var(--mute);font-size:14px}
 .hx-filters button:hover{border-color:rgba(255,210,77,.45)}
 .hx-filters button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#000}.hx-filters button[aria-pressed=true] b{color:#55534d}
 .hx-filters button:disabled{opacity:.4;cursor:not-allowed}
-.hx-flow{--cw:min(560px,80vw);position:relative;height:calc(var(--cw)*.625 + 30px + 64px);margin-top:10px;overflow:hidden;contain:layout paint;perspective:1200px;touch-action:pan-y;-webkit-user-select:none;user-select:none;cursor:grab}
+.hx-flow{--cw:min(560px,80vw);position:relative;overscroll-behavior-x:contain;height:calc(var(--cw)*.625 + 30px + 64px);margin-top:10px;overflow:hidden;contain:layout paint;perspective:1200px;touch-action:pan-y;-webkit-user-select:none;user-select:none;cursor:grab}
 .hx-flow:focus-visible{outline-offset:-4px}
 .hx-card{position:absolute;left:50%;top:28px;width:var(--cw);margin-left:calc(var(--cw)/-2);transition:transform .5s var(--ease),opacity .5s var(--ease),filter .5s var(--ease);will-change:transform;backface-visibility:hidden;cursor:pointer}
 .hx-card.nodur{transition:none}
