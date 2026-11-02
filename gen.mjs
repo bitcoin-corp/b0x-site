@@ -136,9 +136,8 @@ const homeTop = (links) => `<header class="hx-top">
 <div class="wrap hx-in">
   <p class="hx-eye">Hosting on Bitcoin · early access</p>
   <h1 class="hx-h1">${B}<span class="sr">b</span><span class="hx-nm">0-x</span></h1>
-  <p class="hx-lede">Deploy your website to Bitcoin: hosted from your wallet, any version published on chain for good, with a name you own. Below is every b*X site and where each one stands today.</p>
-  <div class="ctas"><a class="btn wt" href="#sites">See all ${gallery.length} sites</a><a class="btn ghost" href="/deploy">How deploys work</a><button class="btn gb" type="button" data-ea-connect>Connect bWalletX</button></div>
-  <p class="ea-note" data-ea="Deploys aren’t open yet. The gallery and the on-chain gateway are live." aria-live="polite">Deploys aren’t open yet. The gallery and the on-chain gateway are live.</p>
+  <p class="hx-lede">Websites on Bitcoin, hosted from your wallet. Here’s every b*X site and where it stands.</p>
+  <div class="ctas"><a class="btn wt" href="#sites">See all ${gallery.length} sites</a><a class="btn ghost" href="/deploy">How deploys work</a><a class="btn gb" href="https://bwalletx.com">Get bWalletX</a></div>
 </div>
 </header>`;
 
