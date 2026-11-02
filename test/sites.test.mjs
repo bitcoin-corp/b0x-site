@@ -29,5 +29,5 @@ test('sites.json: unique domains, every entry complete', () => {
     assert.ok(x.name && /^#[0-9A-F]{6}$/i.test(x.color), x.domain);
     assert.ok(['live', 'soon', 'sale', 'down'].includes(x.stage), x.domain);
   }
-  assert.ok(!s.some((x) => ['bopenx.com', 'bforgex.com', 'bgravityx.com', 'b0asex.com'].includes(x.domain)), 'bOpenX, bForgeX, bGravityX and b0aseX are left out');
+  assert.ok(!s.some((x) => ['bopenx.com', 'bforgex.com', 'bgravityx.com', 'b0asex.com', 'bitchatx.com'].includes(x.domain)), 'bOpenX, bForgeX, bGravityX, b0aseX and bitchatX are left out');
 });
