@@ -91,7 +91,7 @@ ${foot ?? `<footer class="site wrap">
     <div><a class="brand" href="/" style="padding:0;color:var(--ink)"><img src="/logo.svg" width="20" height="28" alt=""><span>b0<span class="gold">-x</span></span></a><p style="margin-top:12px">Vercel and GitHub for developers, on Bitcoin. Early access; in development.</p></div>
     <div><h4>Product</h4><a href="/start">Start here</a><a href="/deploy">Deploy</a><a href="/storage">Storage</a><a href="/publish">Publish</a><a href="/names">Names</a><a href="/pricing">Pricing</a></div>
     <div><h4>Developers</h4><a href="/docs">Docs (draft)</a><a href="/dashboard">Dashboard</a><a href="/new">New project</a><a href="/about">About</a></div>
-    <div><h4>bWalletX family</h4><a href="https://bwalletx.com/b-family">Part of the bWalletX family</a><a href="https://bwalletx.com">bWalletX</a><a href="https://bstorex.com">bStoreX</a><a href="https://bwebx.com">bWebX</a><a href="https://bmintx.com">bMintX</a><a href="https://b0ase.com">b0ase.com</a></div>
+    <div><h4>bWalletX family</h4><a href="https://bwalletx.com/b-family">Part of the bWalletX family</a><a href="https://bwalletx.com">bWalletX</a><a href="https://bstorex.com">bStoreX</a><a href="https://bwebx.com">bWebX</a><a href="https://bmintx.com">bMintX</a></div>
   </div>
   <p class="fine">b0-x · part of the bWalletX family · publishes with bWebX · runs on Bitcoin SV. The CLI and config shown on this site are sketches of the planned design and may change.</p>
   <p class="disclose">${DISCLOSE}</p>
@@ -499,10 +499,10 @@ pages['new'] = layout({
 
 pages['about'] = layout({
   path: '/about', title: 'About · b0-x',
-  desc: 'b0-x is a b0ase.com product in the bWalletX family: on-chain publishing for websites, served by the b0-x gateway. Off-chain hosting is planned. Early access.',
-  body: `${hero('About', 'Built by <span class="gold">b0ase</span>,<br>for developers.', 'b0-x is the developer front door to the bWalletX family: the place to bring a project you already have and put it on Bitcoin.')}
+  desc: 'b0-x is part of the bWalletX family, run by The Bitcoin Corporation Ltd: on-chain publishing for websites, served by the b0-x gateway. Off-chain hosting is planned. Early access.',
+  body: `${hero('About', 'Built by <span class="gold">The Bitcoin Corporation</span>,<br>for developers.', 'b0-x is the developer front door to the bWalletX family: the place to bring a project you already have and put it on Bitcoin.')}
 <section><div class="wrap split">
-  <div><p class="kicker">Where it fits</p><h2>One family, one wallet.</h2><p style="color:var(--ink2)">b0-x is built by <a class="gold" href="https://b0ase.com">b0ase.com</a>, the studio behind the bWalletX family. It doesn't reinvent minting or wallets. It ties them together for one job: deploying websites.</p></div>
+  <div><p class="kicker">Where it fits</p><h2>One family, one wallet.</h2><p style="color:var(--ink2)">b0-x is built and run by The Bitcoin Corporation Ltd, the company behind the bWalletX family. It doesn't reinvent minting or wallets. It ties them together for one job: deploying websites.</p></div>
   <div class="grid2" style="margin-top:0">
     <div class="card"><h3>bWalletX</h3><p>Our BRC-100 wallet. Your sign-in and how you pay. Any BRC-100 wallet works.</p></div>
     <div class="card"><h3>bStoreX</h3><p>The bWalletX store: themes and packs. Not storage.</p></div>
@@ -516,7 +516,7 @@ pages['about'] = layout({
 <section><div class="wrap">
   <p class="kicker">Status</p><h2>Early access, in development.</h2>
   <div class="prose"><p>Deploys aren’t open yet. The sites gallery on the home page and the on-chain gateway are live; the terminal and docs show the design we're building towards, and they'll change as developers try it. We'd rather tell you that plainly than show made-up numbers.</p>
-  <p>Early access has no form and no mailing list. Connect bWalletX and you'll see your key; when there's something to try, it will be announced on b0ase.com and bwalletx.com.</p></div>
+  <p>Early access has no form and no mailing list. Connect bWalletX and you'll see your key; when there's something to try, it will be announced on bwalletx.com.</p></div>
   ${cta()}
 </div></section>`,
 });
