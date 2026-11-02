@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Storage · b0-x</title>
-<meta name="description" content="b0-x hosts files in your own bStoreX bucket: S3/R2-compatible storage on our Hetzner servers, paid from your wallet by locking BSV or a monthly subscription. In development.">
+<meta name="description" content="Where a b0-x site lives: on chain today, each file an inscription, served by the b0-x gateway. Off-chain hosting is planned and not built. Private files belong in bDriveX.">
 <link rel="canonical" href="https://b0-x.com/storage">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://b0-x.com/storage">
 <meta property="og:site_name" content="b0-x">
 <meta property="og:title" content="Storage · b0-x">
-<meta property="og:description" content="b0-x hosts files in your own bStoreX bucket: S3/R2-compatible storage on our Hetzner servers, paid from your wallet by locking BSV or a monthly subscription. In development.">
-<meta property="og:image" content="https://b0-x.com/og-b0x-v1.png">
+<meta property="og:description" content="Where a b0-x site lives: on chain today, each file an inscription, served by the b0-x gateway. Off-chain hosting is planned and not built. Private files belong in bDriveX.">
+<meta property="og:image" content="https://b0-x.com/og-b0x-v2.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Storage · b0-x">
-<meta name="twitter:description" content="b0-x hosts files in your own bStoreX bucket: S3/R2-compatible storage on our Hetzner servers, paid from your wallet by locking BSV or a monthly subscription. In development.">
-<meta name="twitter:image" content="https://b0-x.com/og-b0x-v1.png">
+<meta name="twitter:description" content="Where a b0-x site lives: on chain today, each file an inscription, served by the b0-x gateway. Off-chain hosting is planned and not built. Private files belong in bDriveX.">
+<meta name="twitter:image" content="https://b0-x.com/og-b0x-v2.png">
 <meta name="theme-color" content="#050506">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,41 +49,35 @@
 </header>
 <main id="main">
 <section class="page-hero"><div class="wrap">
-<p class="eyebrow">Storage · bStoreX</p><h1 class="h1s">A bucket that<br>belongs to your <span class="gold">key</span>.</h1><p class="lede">Hosting on b0-x sits on bStoreX, the storage layer of the bWalletX family. It runs on our own Hetzner servers and speaks the S3 API, so the tools you already use keep working.</p><span class="tag dev">In development</span></div></section>
+<p class="eyebrow">Storage</p><h1 class="h1s">Where your<br>site <span class="gold">lives</span>.</h1><p class="lede">Today a b0-x site lives on chain. Each file is an inscription, and the b0-x gateway serves them. Off-chain hosting is planned, not built.</p><span class="tag">Today · on chain</span> <span class="tag dev">Off chain · not built</span></div></section>
 <section><div class="wrap">
+  <p class="kicker">Today</p><h2>On chain.</h2>
   <div class="three">
-    <div class="card"><h3>Your own bucket</h3><p>Each wallet key gets its own bucket. Deploys write into it; the dashboard reads from it. You can also put anything else in it.</p></div>
-    <div class="card"><h3>S3 / R2 compatible</h3><p>Use the AWS CLI, rclone or any S3 SDK. Credentials are issued to your wallet key and can be revoked from the dashboard.</p></div>
-    <div class="card"><h3>Off chain, by design</h3><p>bStoreX is fast, cheap, normal storage. It's not permanent. Permanence is what <a class="gold" href="/publish">publishing</a> is for.</p></div>
+    <div class="card"><h3>Each file an inscription</h3><p>b0-x publishes a static site to Bitcoin SV. Each file is its own inscription, and an ORDFS directory maps paths to them.</p><p><a class="gold" href="/publish">Publishing →</a></p></div>
+    <div class="card"><h3>Served by the gateway</h3><p>The b0-x gateway serves published versions at <code>b0-x.com/s/&lt;name&gt;/</code>. <a class="gold" href="/s/bfriendsx/">bfriendsx</a> and <a class="gold" href="/s/bvideox/">bvideox</a> are there now. Subdomains like <code>&lt;name&gt;.b0-x.com</code> are planned; DNS isn't set up.</p></div>
+    <div class="card"><h3>Permanent</h3><p>A published version can't be edited or taken down. A new version gets a new directory, and the name points at it. Old versions stay.</p></div>
   </div>
 </div></section>
 <section><div class="wrap split">
-  <div><p class="kicker">API sketch</p><h2>Standard S3 calls.</h2><p style="color:var(--ink2)">The endpoint and key format below are a sketch and will change before launch.</p><span class="tag draft">Draft</span></div>
-  <div style="min-width:0"><pre class="code"><span class="c"># AWS CLI, pointed at bStoreX (sketch)</span>
-export AWS_ACCESS_KEY_ID=bsx_xxxxxxxx
-export AWS_SECRET_ACCESS_KEY=your-secret-here
-aws s3 ls s3://my-sites/ \
-  --endpoint-url https://s3.bstorex.com
-
-aws s3 sync ./out s3://my-sites/my-docs/ \
-  --endpoint-url https://s3.bstorex.com</pre>
-<pre class="code"><span class="c">// JavaScript, @aws-sdk/client-s3 (sketch)</span>
-const s3 = new S3Client({
-  region: 'auto',
-  endpoint: 'https://s3.bstorex.com',
-  credentials: { accessKeyId, secretAccessKey },
-});</pre></div>
+  <div><p class="kicker">Names point at versions</p><h2>The gateway registry.</h2><p style="color:var(--ink2)">Each name points at one on-chain directory, its current version. These are the real entries today.</p></div>
+  <div style="min-width:0"><pre class="code"><span class="c"># name → current version (ORDFS directory)</span>
+bfriendsx  → v2  2f45c498…17c3_0
+bvideox    → v3  ededbb57…30f1_0</pre></div>
 </div></section>
 <section><div class="wrap">
-  <p class="kicker">Paying for it</p><h2>Lock or subscribe.</h2>
+  <p class="kicker">Planned</p><h2>Off-chain hosting. <span class="tag dev">Not built</span></h2>
   <div class="grid2">
-    <div class="card"><h3>Lock BSV for a term</h3><p>Lock an amount of BSV in your own wallet for, say, 3 or 12 months. The lock pays for a storage allowance. At the end of the term the BSV unlocks back to you, less the storage fee.</p><p class="small">The coins never leave your wallet's control; the lock is a time-locked output you own.</p></div>
-    <div class="card"><h3>Monthly subscription</h3><p>Or pay a small amount each month straight from your wallet. Stop paying and your bucket is kept read-only for a grace period, then cleared.</p><p class="small">Anything you published on chain is unaffected; it lives on Bitcoin, not in the bucket.</p></div>
+    <div class="card"><h3>What it's for</h3><p>Previews, and heavy media that shouldn't go on chain. Normal storage, not permanent.</p></div>
+    <div class="card"><h3>Where it stands</h3><p>Not built yet. We haven't chosen the storage service. No prices until it's real. The plan is to pay monthly from your wallet.</p><p class="small">Anything you publish on chain won't depend on it.</p></div>
   </div>
-  <h3 style="margin-top:36px">Pricing model</h3>
-  <p style="color:var(--ink2)">Priced by GB stored per month, at or near our cost. Bandwidth for normal sites is included. Final per-GB prices will be published before launch; we won't put a number here until it's real.</p>
 </div></section>
-<section style="border-bottom:0"><div class="wrap"><div class="ctas"><button class="btn gb" type="button" data-ea-connect>Connect bWalletX to join early access</button><a class="btn ghost" href="/pricing">See pricing</a></div>
+<section><div class="wrap">
+  <p class="kicker">Private files</p><h2>That's bDriveX.</h2>
+  <div class="prose"><p><a class="gold" href="https://bdrivex.com">bDriveX</a> is the bWalletX family's drive for private files. Files are encrypted on your device before upload; the server holds only ciphertext. You share with a link only the people you choose can open.</p>
+  <p>It's an invite-only beta, and there are no backups yet. It isn't web hosting: it can't serve a public website.</p>
+  <p class="small">bStoreX, at bstorex.com, is the bWalletX store (themes and packs). It isn't storage.</p></div>
+</div></section>
+<section style="border-bottom:0"><div class="wrap"><div class="ctas"><button class="btn gb" type="button" data-ea-connect>Connect bWalletX to join early access</button><a class="btn ghost" href="/publish">How publishing works</a></div>
 <p class="ea-note" data-ea="Connect bWalletX to join early access. Nothing is stored; this just shows you your key." aria-live="polite">Connect bWalletX to join early access. Nothing is stored; this just shows you your key.</p></div></section>
 </main>
 <footer class="site wrap">
@@ -93,7 +87,7 @@ const s3 = new S3Client({
     <div><h4>Developers</h4><a href="/docs">Docs (draft)</a><a href="/dashboard">Dashboard</a><a href="/new">New project</a><a href="/about">About</a></div>
     <div><h4>bWalletX family</h4><a href="https://bwalletx.com/b-family">Part of the bWalletX family</a><a href="https://bwalletx.com">bWalletX</a><a href="https://bstorex.com">bStoreX</a><a href="https://bwebx.com">bWebX</a><a href="https://bmintx.com">bMintX</a><a href="https://b0ase.com">b0ase.com</a></div>
   </div>
-  <p class="fine">b0-x · part of the bWalletX family · built on bStoreX · publishes with bWebX · runs on Bitcoin SV. The CLI and config shown on this site are sketches of the planned design and may change.</p>
+  <p class="fine">b0-x · part of the bWalletX family · publishes with bWebX · runs on Bitcoin SV. The CLI and config shown on this site are sketches of the planned design and may change.</p>
 </footer>
 <script src="https://unpkg.com/@bwalletx/connect@0.5.0/dist/bwalletx-connect.global.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
