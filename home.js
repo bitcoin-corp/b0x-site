@@ -7,11 +7,11 @@
   if (!flow) return;
   const cards = [...flow.querySelectorAll('.hx-card')];
   const info = document.querySelector('.hx-info');
-  const STAGE = { live: 'Live', soon: 'Placeholder', sale: 'For sale', down: 'Not responding' };
-  const STAGE_LINE = { live: '', soon: 'Holding page. The site isn’t built yet.', sale: 'The domain is for sale.', down: 'Doesn’t respond yet.' };
+  const STAGE = { live: 'Live', coming: 'Coming soon', soon: 'Placeholder', sale: 'For sale', down: 'Not responding' };
+  const STAGE_LINE = { live: '', coming: '', soon: 'Holding page. The site isn’t built yet.', sale: 'The domain is for sale.', down: 'Doesn’t respond yet.' };
   const B = document.querySelector('.hx-name .hx-b')?.outerHTML || '';
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-  const groupOf = (s) => (s.stage === 'live' || s.stage === 'soon' ? s.stage : 'out');
+  const groupOf = (s) => (s.stage === 'live' || s.stage === 'coming' ? 'live' : s.stage === 'soon' ? 'soon' : 'out');
   const inFilter = (s, f) => f === 'all' || (f === 'chain' ? !!s.chain : groupOf(s) === f);
 
   let filter = 'all', set = all.map((_, i) => i), cur = 0, drag = 0, cw = 560, wide = 1000, shown = -1;
@@ -149,7 +149,8 @@
   // Live status: refresh chips, regroup the shelf and recount. Keeps the audited status if the check fails.
   fetch('/api/sites').then((r) => (r.ok ? r.json() : null)).then((j) => {
     if (!j?.sites) return;
-    // `pinned`: live by another route than its web page (bTerminalX ships as the npm CLI while its site is a holding page).
+    // `pinned`: keep the audited stage. bTerminalX is live as the npm CLI while its site is a holding page; `coming`
+    // sites (bTicketsX, bMarketingX) serve a built page that /api/sites would read as live.
     for (const s of all) if (j.sites[s.domain] && !s.pinned) s.stage = j.sites[s.domain];
     document.querySelectorAll('[data-d]').forEach((el) => {
       const s = all.find((x) => x.domain === el.dataset.d), ch = el.querySelector('[data-st]');

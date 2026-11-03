@@ -89,8 +89,9 @@
       "domain": "bmarketingx.com",
       "name": "bMarketingX",
       "color": "#E879F9",
-      "line": "People who run your campaign. Coming soon.",
-      "stage": "soon"
+      "line": "People who run your campaign.",
+      "stage": "coming",
+      "pinned": true
     },
     {
       "domain": "bmarketx.com",
@@ -257,8 +258,9 @@
       "domain": "bticketsx.com",
       "name": "bTicketsX",
       "color": "#C8F03C",
-      "line": "Tickets you actually own. Coming soon.",
-      "stage": "soon"
+      "line": "Tickets you actually own.",
+      "stage": "coming",
+      "pinned": true
     },
     {
       "domain": "bvaultx.com",

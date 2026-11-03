@@ -240,6 +240,7 @@ a.hx-card:focus-visible{outline:none}a.hx-card:focus-visible .hx-win{box-shadow:
 .hx-chip{display:inline-flex;align-items:center;gap:7px;font:600 12px/1 'Space Grotesk';padding:7px 11px;border-radius:999px;color:var(--ink);background:rgba(10,10,12,.72);border:1px solid rgba(255,255,255,.18);white-space:nowrap;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .st-live::before,.st-down::before{content:"";width:7px;height:7px;border-radius:50%;background:#3bd16f;box-shadow:0 0 0 3px rgba(59,209,111,.22)}
 .st-soon{color:var(--mute);border-style:dashed}
+.st-coming::before{content:"";width:7px;height:7px;border-radius:50%;background:#ffd24d;box-shadow:0 0 0 3px rgba(255,210,77,.22)}
 .st-sale{color:#ffb38a;border-color:rgba(255,179,138,.4)}
 .st-down{color:#ff8a7a;border-color:rgba(255,138,122,.4)}.st-down::before{background:#ff5a4f;box-shadow:0 0 0 3px rgba(255,90,79,.2)}
 .st-chain{background:linear-gradient(180deg,#ffe58a,#ffd24d 55%,#e0a800);color:#000;border-color:transparent}

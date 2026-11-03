@@ -118,14 +118,16 @@ const SITES = JSON.parse(readFileSync(new URL('./sites.json', import.meta.url), 
 const REG = JSON.parse(readFileSync(new URL('./names.json', import.meta.url), 'utf8'));
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const chainBy = Object.fromEntries(Object.entries(REG).filter(([, v]) => v.source).map(([name, v]) => [v.source, { name, v: v.versions.length }]));
-const RANK = { live: 1, soon: 2, sale: 3, down: 4 };
+const RANK = { live: 1, coming: 1.5, soon: 2, sale: 3, down: 4 };
 const FIRST = 'bwalletx.com'; // the carousel opens on bWalletX
 const gallery = SITES.sites
   .map((s) => { const slug = s.domain.replace(/\.com$/, ''); return { ...s, slug, chain: chainBy[s.domain] || null, shot: existsSync(new URL(`./img/sites/${slug}.webp`, import.meta.url)) }; })
   .sort((a, b) => (b.domain === FIRST) - (a.domain === FIRST) || (!!b.chain - !!a.chain) || RANK[a.stage] - RANK[b.stage] || a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
-const groupOf = (s) => (s.stage === 'live' || s.stage === 'soon' ? s.stage : 'out');
-const STAGE = { live: 'Live', soon: 'Placeholder', sale: 'For sale', down: 'Not responding' };
-const STAGE_LINE = { live: '', soon: 'Holding page. The site isn’t built yet.', sale: 'The domain is for sale.', down: 'Doesn’t respond yet.' };
+// `coming`: a built page for a service that isn't open yet. It sits with Live (the page is built and serving) but its
+// chip says "Coming soon", never Live (CEO: a service is Live only when it works).
+const groupOf = (s) => (s.stage === 'live' || s.stage === 'coming' ? 'live' : s.stage === 'soon' ? 'soon' : 'out');
+const STAGE = { live: 'Live', coming: 'Coming soon', soon: 'Placeholder', sale: 'For sale', down: 'Not responding' };
+const STAGE_LINE = { live: '', coming: '', soon: 'Holding page. The site isn’t built yet.', sale: 'The domain is for sale.', down: 'Doesn’t respond yet.' };
 const B = '<svg class="hx-b" viewBox="23 8 74 100" aria-hidden="true" focusable="false"><path fill="currentColor" d="M45 12V72H27V30Z M27 72a33 33 0 1 1 66 0a33 33 0 1 1-66 0Z M45 72a15 15 0 1 0 30 0a15 15 0 1 0-30 0Z"/></svg>';
 const mark = (s) => (s.name[0] === 'b' ? `${B}<span class="sr">b</span>${esc(s.name.slice(1))}` : esc(s.name));
 const chip = (s) => `<span class="hx-chip st-${s.stage}" data-st>${STAGE[s.stage]}</span>`;
