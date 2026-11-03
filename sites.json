@@ -86,6 +86,13 @@
       "stage": "live"
     },
     {
+      "domain": "bmarketingx.com",
+      "name": "bMarketingX",
+      "color": "#E879F9",
+      "line": "People who run your campaign. Coming soon.",
+      "stage": "soon"
+    },
+    {
       "domain": "bmarketx.com",
       "name": "bMarketX",
       "color": "#D4A017",
@@ -278,8 +285,8 @@
       "domain": "bwebx.com",
       "name": "bWebX",
       "color": "#38BDF8",
-      "line": "Your websites, on chain for good.",
-      "stage": "soon"
+      "line": "Websites, made by b.",
+      "stage": "live"
     },
     {
       "domain": "bwriterx.com",
