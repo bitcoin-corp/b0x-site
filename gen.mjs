@@ -148,17 +148,17 @@ const shotDate = new Date(SITES.checked).toLocaleDateString('en-GB', { day: 'num
 const json = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
 
 const homeTop = (links) => `<header class="hx-top">
-<div class="hx-art" aria-hidden="true"><img class="hx-bg" src="/img/sites-wall.webp" alt="" width="1920" height="900" fetchpriority="high"><div class="hx-blocks"></div><div class="hx-ghost">DEPLOY</div></div>
+<div class="hx-art" aria-hidden="true"><img class="hx-bg" src="/img/sites-wall.webp" alt="" width="1920" height="900" fetchpriority="high"><div class="hx-blocks"></div><div class="hx-ghost">APPS</div></div>
 <div class="wrap nav site">
   <div class="brand-row"><a class="brand" href="/" aria-label="b0-x home"><img src="/logo.svg" width="20" height="28" alt=""><span>0-x</span></a>${BETA}</div>
   <nav class="links" id="links" aria-label="Main">${links}</nav>
   <div class="nav-right"><span data-bwx></span><button class="menu-btn" type="button" aria-controls="links" aria-expanded="false" aria-label="Menu">&#9776;</button></div>
 </div>
 <div class="wrap hx-in">
-  <p class="hx-eye">Hosting on Bitcoin · early access</p>
+  <p class="hx-eye">The bWalletX family · live status</p>
   <h1 class="hx-h1">${B}<span class="sr">b</span><span class="hx-nm">0-x</span></h1>
-  <p class="hx-lede">Websites on Bitcoin, published on chain. Here’s every b*X site and where it stands.</p>
-  <div class="ctas"><a class="btn wt" href="#sites">See all ${gallery.length} sites</a><a class="btn ghost" href="/deploy">How deploys work</a><a class="btn gb" href="https://bwalletx.com">Get bWalletX</a></div>
+  <p class="hx-lede">Every bWalletX app in one place, and where each one stands today: live, coming soon or a placeholder.</p>
+  <div class="ctas"><a class="btn wt" href="#sites">Explore the apps</a><a class="btn gb" href="https://bwalletx.com">Get bWalletX</a></div>
 </div>
 </header>`;
 
@@ -171,8 +171,8 @@ pages['index'] = layout({
   top: homeTop,
   tail: '<script src="/home.js"></script>',
   body: `<section class="hx-sites" id="sites" aria-roledescription="carousel" aria-label="b*X sites">
-  <p class="hx-kick">Pick a site</p>
-  <div class="hx-search"><input type="search" id="hx-q" placeholder="Search ${gallery.length} sites" aria-label="Search sites by name, domain or what they do" autocomplete="off" spellcheck="false"><kbd aria-hidden="true">/</kbd></div>
+  <p class="hx-kick">Pick an app</p>
+  <div class="hx-search"><input type="search" id="hx-q" placeholder="Search ${gallery.length} apps" aria-label="Search apps by name, domain or what they do" autocomplete="off" spellcheck="false"><kbd aria-hidden="true">/</kbd></div>
   <p class="hx-nomatch" role="status" hidden>No site matches “<span data-q></span>”.</p>
   <div class="hx-filters" role="group" aria-label="Show">${FILTERS.map(([f, t]) => `<button type="button" data-f="${f}" aria-pressed="${f === 'all'}"${count(f) ? '' : ' disabled'}>${t}<b data-fc="${f}">${count(f)}</b></button>`).join('')}</div>
   <div class="hx-flow" tabindex="0" aria-label="Sites. Use the left and right arrow keys.">
