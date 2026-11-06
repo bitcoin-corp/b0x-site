@@ -6,9 +6,9 @@
 // Every write goes through guard(): with under 2 minutes of token left it saves the write as a draft, renews,
 // and reopens the same sheet (filled in) when the page comes back.
 // This page never talks to a wallet itself. In stub mode the Connect bWalletX scripts aren't even loaded.
-import { readConfig, isStub, STUB_BASE, LANDING } from './config.js';
+import { readConfig, isStub, siteUrls, STUB_BASE, LANDING } from './config.js';
 import { createTokenStore } from './token.js';
-import { decide, readCallback, startAuthorize, finishCallback, writeGate, saveDraft, takeDraft, logoutUrl, SILENT_KEY } from './auth.js';
+import { decide, readCallback, startAuthorize, finishCallback, callbackOutcome, writeGate, saveDraft, takeDraft, logoutUrl, SILENT_KEY } from './auth.js';
 import { createClient, cleanLabel, safeRedirect, ApiError } from './api.js';
 import { createStub, stubOptions } from './stub.js';
 import * as R from './render.js';
@@ -26,7 +26,8 @@ let mode = 'loading';            // 'live' | 'soon'
 let me = null;                   // GET /me, cached for the sidebar and header
 let fixture = null;
 let nowFn = () => Date.now();
-const ctx = () => ({ now: nowFn(), stub, here: location.origin + '/dashboard' });
+const URLS = siteUrls(location.origin);
+const ctx = () => ({ now: nowFn(), stub, here: URLS.redirect });
 
 const toast = (msg, tag = 'Done') => { toastEl.innerHTML = `<b>${R.esc(tag)}</b>${R.esc(msg)}`; toastEl.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => toastEl.classList.remove('on'), 4200); };
 // Leaving the page. In stub mode nothing leaves: it says where the live page would go.
@@ -108,7 +109,7 @@ function drawHeader() {
 function signOut() {
   sheet({ ...R.sheets.signOut(), onConfirm: async () => {
     const c = stub ? { ...cfg, apiBase: 'https://id.b0-x.com', clientId: cfg.clientId || 'b0-x' } : cfg;
-    const url = logoutUrl({ cfg: c, returnTo: location.origin + '/' });
+    const url = logoutUrl({ cfg: c, returnTo: URLS.logout });
     tokens.clear();
     go(url);
   } });
@@ -151,7 +152,7 @@ async function wallets(pane, n) {
   const byKey = (k) => wl.wallets.find((w) => w.identityKey === k);
   const byP = (p) => wl.linked.find((x) => x.provider === p);
   const done = async (msg) => { toast(msg); await refreshMe(); route(); };
-  const returnTo = location.origin + '/dashboard#/wallets';
+  const returnTo = URLS.link;
   const follow = (r) => { const u = safeRedirect(r?.redirectUrl, api.base); if (!u) throw new ApiError({ code: 'server_error', message: 'The sign-in service sent back a link we won’t follow.' }); go(u); };
   Object.assign(openers, {
     unlinkWallet: ({ key }) => { const w = byKey(key); if (!w) return;
@@ -161,9 +162,10 @@ async function wallets(pane, n) {
     makePrimary: ({ key }) => { const w = byKey(key); if (!w) return;
       sheet({ ...R.sheets.makePrimary(w, wl.wallets.find((x) => x.primary)), onConfirm: async () => {
         if (await guard('makePrimary', { key })) return never();
-        const r = await api.makePrimary(key);
-        if (r?.redirectUrl) return follow(r); // the login service asks the new wallet to sign (and a fresh sign-in)
-        await done(`${w.label} is now your primary wallet.`);
+        // v1.2: always 200 { redirectUrl }. The login service asks the new wallet to sign (and for a fresh
+        // sign-in after 10 minutes), then returns to #/wallets, which refetches /wallets.
+        follow(await api.makePrimary(key, returnTo));
+        if (stub) { await refreshMe(); route(); }
       } }); },
     rename: ({ key, label: draft }) => { const w = byKey(key); if (!w) return;
       const s = sheet({ ...R.sheets.rename(w), onConfirm: async (sh) => {
@@ -301,8 +303,9 @@ async function boot() {
   } else {
     if (action === 'callback') {
       const r = await finishCallback({ cfg, origin: location.origin, storage: session, callback, tokens });
-      history.replaceState(null, '', location.pathname + (r.back || location.hash));
-      if (!r.ok) { takeDraft(session); return toLanding(); }
+      const out = callbackOutcome(r);
+      history.replaceState(null, '', location.pathname + (out.back || location.hash)); // the code never stays in the URL
+      if (out.action === 'landing') { takeDraft(session); return toLanding(); }   // e.g. error=login_required
       pendingDraft = takeDraft(session); // a write that waited on this renewal: its sheet reopens, filled in
     }
     api = createClient({ base: cfg.apiBase, getToken: () => tokens.get(), onUnauthorized: toLanding });

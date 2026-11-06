@@ -488,13 +488,15 @@ $ npx b0-x names point my-site latest</pre>
 // handoffs model/31), with b0-x's own Projects (/dash.js, GET /api/me) as its Projects section.
 // ACCOUNT.api empty = the API isn't live yet: the hub shows "Account service coming soon" and Projects works.
 // wallet: false because hub/app.js loads the Connect bWalletX scripts itself, and never in stub mode.
-const ACCOUNT = { api: '', client: 'b0-x' };
+// Going live: api: 'https://id.b0-x.com' (hub/config.js LIVE_API_BASE). Kept empty until the login service is live.
+const ACCOUNT = { api: '', client: 'b0-x', scope: 'account' };
 pages['dashboard'] = layout({
   path: '/dashboard', title: 'Dashboard · b0-x',
   desc: 'Your b0-x dashboard: the sites you have published on chain, every version, live links and domains. Sign in with bWalletX.',
   head: `<meta name="robots" content="noindex">
 <meta name="b0x-account-api" content="${ACCOUNT.api}">
 <meta name="b0x-account-client" content="${ACCOUNT.client}">
+<meta name="b0x-account-scope" content="${ACCOUNT.scope}">
 <link rel="stylesheet" href="/hub/hub.css">
 `,
   wallet: false,

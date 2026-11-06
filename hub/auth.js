@@ -80,7 +80,7 @@ export async function challengeS256(verifier, crypto = globalThis.crypto) {
   return b64url(new Uint8Array(d));
 }
 
-export const redirectUri = (cfg, origin) => origin + cfg.redirectPath;
+export const redirectUri = (cfg, origin) => origin + cfg.redirectPath; // exact: https://b0-x.com/dashboard
 
 export function authorizeUrl({ cfg, origin, challenge, state, prompt }) {
   const u = new URL(cfg.apiBase + cfg.authorizePath);
@@ -101,12 +101,21 @@ export async function startAuthorize({ cfg, origin, storage, go, prompt = 'none'
   go(authorizeUrl({ cfg, origin, challenge, state, prompt }));
 }
 
+/**
+ * After finishCallback: what the page does next. Any failure (login_required from prompt=none, a state that
+ * doesn't match, a token error) clears the token and goes to the landing page, which never redirects back
+ * on its own, so it can't loop. -> { action: 'resume', back } | { action: 'landing' }
+ */
+export function callbackOutcome(r) {
+  return r && r.ok ? { action: 'resume', back: r.back || '' } : { action: 'landing' };
+}
+
 /** Swaps the callback's one-time code for an access token. -> { ok: true, back } | { ok: false, reason } */
 export async function finishCallback({ cfg, origin, storage, callback, tokens, fetch = globalThis.fetch }) {
   let saved = null;
   try { saved = JSON.parse(storage.getItem(PKCE_KEY) || 'null'); } catch { saved = null; }
   storage.removeItem(PKCE_KEY);
-  if (!saved || !saved.verifier || saved.state !== callback.state) return { ok: false, reason: 'state_mismatch' };
+  if (!saved || !saved.verifier || !saved.state || !callback.state || saved.state !== callback.state) return { ok: false, reason: 'state_mismatch' };
   if (callback.error) return { ok: false, reason: callback.error }; // login_required etc.: signed out centrally
   const body = new URLSearchParams({ grant_type: 'authorization_code', code: callback.code, redirect_uri: redirectUri(cfg, origin), client_id: cfg.clientId, code_verifier: saved.verifier });
   let r;

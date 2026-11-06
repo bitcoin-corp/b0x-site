@@ -41,9 +41,16 @@ export function codeFor(status) {
 export function toApiError(status, body, retryAfterHeader) {
   const b = body && typeof body === 'object' ? body : {};
   const code = KNOWN.has(b.error) ? b.error : codeFor(status);
-  const msg = typeof b.message === 'string' && b.message.trim() ? b.message.trim().slice(0, 300) : MESSAGES[code];
   const reason = code === 'conflict' && (b.reason === 'last_sign_in_method' || b.reason === 'primary_wallet') ? b.reason : null;
-  const ra = retryAfterHeader != null && /^\d+$/.test(String(retryAfterHeader).trim()) ? +retryAfterHeader : null;
+  // Retry-After (exposed by CORS, v1.2): seconds, or an HTTP date
+  let ra = null;
+  if (retryAfterHeader != null && String(retryAfterHeader).trim()) {
+    const v = String(retryAfterHeader).trim();
+    if (/^\d+$/.test(v)) ra = +v;
+    else if (!isNaN(Date.parse(v))) ra = Math.max(0, Math.ceil((Date.parse(v) - Date.now()) / 1000));
+  }
+  const waitMsg = code === 'rate_limited' && ra != null ? `Too many requests. Try again in ${ra < 90 ? `${Math.max(ra, 1)} seconds` : `about ${Math.round(ra / 60)} minutes`}.` : null;
+  const msg = typeof b.message === 'string' && b.message.trim() ? b.message.trim().slice(0, 300) : waitMsg || MESSAGES[code];
   return new ApiError({ status, code, message: msg, reason, retryAfter: code === 'rate_limited' ? ra : null });
 }
 
@@ -80,7 +87,8 @@ export function createClient({ base, getToken = () => null, fetch = globalThis.f
     sessions: () => call('GET', '/api/account/sessions'),
     linkWallet: (kind, returnTo) => call('POST', '/api/account/wallets/link', { kind, returnTo }),
     linkProvider: (provider, returnTo) => call('POST', `/api/account/linked/${enc(provider)}/start`, { returnTo }),
-    makePrimary: (identityKey) => call('POST', `/api/account/wallets/${enc(identityKey)}/primary`),
+    // v1.2: always 200 { redirectUrl }: the new wallet signs on the login service, which then returns to returnTo
+    makePrimary: (identityKey, returnTo) => call('POST', `/api/account/wallets/${enc(identityKey)}/primary`, { returnTo }),
     renameWallet: (identityKey, label) => call('PATCH', `/api/account/wallets/${enc(identityKey)}`, { label }),
     unlinkWallet: (identityKey) => call('DELETE', `/api/account/wallets/${enc(identityKey)}`),
     unlinkProvider: (provider) => call('DELETE', `/api/account/linked/${enc(provider)}`),

@@ -81,9 +81,12 @@ export function createStub(fixture, { fail = {}, hold = [], delayMs = 0 } = {}) 
     if (method === 'POST' && (m = /^\/api\/account\/wallets\/([^/]+)\/primary$/.exec(path))) return ['primary', () => {
       const k = decodeURIComponent(m[1]); const w = W();
       if (!w.wallets.some((x) => x.identityKey === k)) return err(404);
+      if (typeof body?.returnTo !== 'string') return err(400);
+      // v1.2 always answers 200 { redirectUrl } (the new wallet signs on the login service). The stub can't run
+      // that step, so it applies the change as if the person had signed and come back, then answers the same way.
       w.wallets.forEach((x) => { x.primary = x.identityKey === k; });
       applyUnlinkRules(w);
-      return respond(204);
+      return respond(200, { redirectUrl: `${origin}/primary/confirm?key=${encodeURIComponent(k)}` });
     }];
     if (method === 'PATCH' && (m = /^\/api\/account\/wallets\/([^/]+)$/.exec(path))) return ['rename', () => {
       const k = decodeURIComponent(m[1]); const x = W().wallets.find((y) => y.identityKey === k);

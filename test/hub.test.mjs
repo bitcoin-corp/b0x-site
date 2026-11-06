@@ -5,8 +5,8 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { createClient, toApiError, codeFor, ApiError, safeRedirect, cleanLabel, CODES } from '../hub/api.js';
 import { createTokenStore, TOKEN_KEY, MAX_LIFE_S } from '../hub/token.js';
-import { decide, writeGate, saveDraft, takeDraft, DRAFT_KEY, logoutUrl, authorizeUrl, challengeS256, readCallback, startAuthorize, finishCallback, PKCE_KEY, SILENT_KEY } from '../hub/auth.js';
-import { readConfig, cleanBase, isStub, configured, LANDING, STUB_BASE, DEFAULTS } from '../hub/config.js';
+import { decide, writeGate, saveDraft, takeDraft, DRAFT_KEY, logoutUrl, authorizeUrl, challengeS256, readCallback, startAuthorize, finishCallback, callbackOutcome, PKCE_KEY, SILENT_KEY } from '../hub/auth.js';
+import { readConfig, cleanBase, isStub, configured, siteUrls, LANDING, STUB_BASE, DEFAULTS, LIVE_API_BASE } from '../hub/config.js';
 import { createStub, stubOptions, applyUnlinkRules } from '../hub/stub.js';
 import * as R from '../hub/render.js';
 
@@ -35,6 +35,9 @@ test('client: calls the configured base with a Bearer token, JSON body, no cooki
   assert.equal(calls[2].init.method, 'PATCH');
   await c.revokeAll(1);
   assert.deepEqual(JSON.parse(calls[3].init.body), { keepCurrent: true });
+  await c.makePrimary('03f1', 'https://b0-x.com/dashboard#/wallets');
+  assert.equal(calls[4].url, 'https://id.b0-x.com/api/account/wallets/03f1/primary');
+  assert.deepEqual(JSON.parse(calls[4].init.body), { returnTo: 'https://b0-x.com/dashboard#/wallets' }, 'v1.2: make primary sends returnTo');
   assert.throws(() => createClient({ base: '' }), /not configured/);
 });
 
@@ -55,6 +58,11 @@ test('client: errors map to the v1 codes', async () => {
   assert.deepEqual([e.status, e.code, e.reason, e.message], [409, 'conflict', 'primary_wallet', 'Make another wallet primary first.']);
   assert.equal(toApiError(409, { error: 'conflict', reason: 'evil' }).reason, null, 'only the two v1 reasons pass');
   assert.equal(toApiError(429, { error: 'rate_limited' }, '60').retryAfter, 60);
+  assert.equal(toApiError(429, { error: 'rate_limited' }, '30').message, 'Too many requests. Try again in 30 seconds.', 'no server message: the wait from Retry-After');
+  assert.equal(toApiError(429, { error: 'rate_limited' }, new Date(Date.now() + 120_000).toUTCString()).retryAfter > 100, true, 'Retry-After as an HTTP date');
+  assert.equal(toApiError(429, { error: 'rate_limited' }, 'soon').retryAfter, null);
+  const limited = createClient({ base: 'https://id.b0-x.com', fetch: async () => new Response(JSON.stringify({ error: 'rate_limited', message: 'Slow down.' }), { status: 429, headers: { 'Retry-After': '45' } }) });
+  await assert.rejects(limited.wallets(), (x) => x.code === 'rate_limited' && x.retryAfter === 45 && x.message === 'Slow down.', 'the client reads Retry-After on a 429');
   assert.equal(toApiError(500, { error: 'made_up', message: '' }).code, 'server_error', 'unknown error codes fall back to the status');
   assert.match(toApiError(500, null).message, /our side/);
   let hit = null;
@@ -86,6 +94,10 @@ test('config: base must be https (or local http); meta tags; stub on ?stub=1 or 
   const c = readConfig(doc);
   assert.equal(c.apiBase, 'https://id.b0-x.com');
   assert.equal(c.logoutPath, '/logout');
+  assert.equal(c.scope, 'account');
+  assert.equal(c.authorizePath, '/oauth/authorize');
+  assert.equal(c.tokenPath, '/oauth/token');
+  assert.equal(LIVE_API_BASE, 'https://id.b0-x.com');
   assert.equal(configured(c), true);
   assert.equal(configured(readConfig({ querySelector: () => null })), false);
   assert.equal(isStub({ hostname: 'b0-x.com', search: '?stub=1' }), true);
@@ -205,7 +217,42 @@ test('renewal: prompt=none authorize keeps the tab, and the callback restores to
   const st = JSON.parse(ss.getItem(PKCE_KEY)).state;
   assert.deepEqual(await finishCallback({ cfg: CFG, origin: 'https://b0-x.com', storage: ss, callback: readCallback(`?error=login_required&state=${st}`), tokens, fetch }), { ok: false, reason: 'login_required' });
   assert.equal(await challengeS256('verifier-123'), createHash('sha256').update('verifier-123').digest('base64url'), 'S256 = base64url(sha256(verifier))');
-  assert.equal(new URL(authorizeUrl({ cfg: CFG, origin: 'https://b0-x.com', challenge: 'c', state: 's' })).searchParams.has('prompt'), false);
+  const plain = new URL(authorizeUrl({ cfg: CFG, origin: 'https://b0-x.com', challenge: 'c', state: 's' })).searchParams;
+  assert.equal(plain.has('prompt'), false);
+  assert.equal(plain.get('scope'), 'account');
+  assert.equal(plain.get('state'), 's');
+  assert.equal(u.searchParams.get('scope'), 'account');
+  assert.ok(u.searchParams.get('state'), 'state is always sent');
+});
+
+test('prompt=none with no central login: error=login_required clears the token and lands, no loop', async () => {
+  const ss = memStorage();
+  const tokens = createTokenStore({ storage: ss, now: () => NOW });
+  tokens.save({ access_token: 'old', expires_in: 10 });
+  await startAuthorize({ cfg: CFG, origin: 'https://b0-x.com', storage: ss, go: () => {}, now: NOW });
+  const st = JSON.parse(ss.getItem(PKCE_KEY)).state;
+  const r = await finishCallback({ cfg: CFG, origin: 'https://b0-x.com', storage: ss, callback: readCallback(`?error=login_required&state=${st}`), tokens, fetch: async () => { throw new Error('no token call on an error'); } });
+  assert.deepEqual(callbackOutcome(r), { action: 'landing' });
+  assert.deepEqual(callbackOutcome({ ok: false, reason: 'state_mismatch' }), { action: 'landing' });
+  assert.deepEqual(callbackOutcome({ ok: true, back: '#/wallets' }), { action: 'resume', back: '#/wallets' });
+  tokens.clear(); // what the hub does before going to the landing page
+  assert.equal(tokens.state(), 'none');
+  assert.equal(decide({ stub: false, cfg: CFG, tokenState: tokens.state(), callback: null, lastSilentAt: NOW, now: NOW + 1000 }), 'landing', 'back on /dashboard: landing, not another prompt=none');
+  assert.deepEqual(await finishCallback({ cfg: CFG, origin: 'https://b0-x.com', storage: memStorage(), callback: { error: 'login_required', state: '' }, tokens }), { ok: false, reason: 'state_mismatch' }, 'state is required');
+  const app = readFileSync(new URL('../hub/app.js', import.meta.url), 'utf8');
+  assert.match(app, /if \(out\.action === 'landing'\) \{ takeDraft\(session\); return toLanding\(\); \}/);
+  assert.match(app, /function toLanding\(\) \{ tokens\.clear\(\);/);
+});
+
+test('exact redirect and returnTo URLs (v1.2)', () => {
+  assert.deepEqual(siteUrls('https://b0-x.com'), { redirect: 'https://b0-x.com/dashboard', logout: 'https://b0-x.com/', link: 'https://b0-x.com/dashboard#/wallets' });
+  const a = new URL(authorizeUrl({ cfg: CFG, origin: 'https://b0-x.com', challenge: 'c', state: 's' }));
+  assert.equal(a.searchParams.get('redirect_uri'), siteUrls('https://b0-x.com').redirect);
+  assert.equal(new URL(logoutUrl({ cfg: CFG, returnTo: siteUrls('https://b0-x.com').logout })).searchParams.get('returnTo'), 'https://b0-x.com/');
+  const app = readFileSync(new URL('../hub/app.js', import.meta.url), 'utf8');
+  assert.match(app, /const returnTo = URLS\.link;/);
+  assert.match(app, /returnTo: URLS\.logout/);
+  assert.doesNotMatch(app, /location\.origin \+ '\/dashboard/, 'every returnTo comes from siteUrls');
 });
 
 test('sign out: a top-level GET to the login service logout, with client_id and returnTo', () => {
@@ -239,8 +286,10 @@ test('stub through the real client: writes, conflicts, forced errors', async () 
   await assert.rejects(c.renameWallet(primary.identityKey, 'x'.repeat(41)), (e) => e.code === 'invalid_request' && e.status === 400);
   assert.equal((await c.renameWallet(primary.identityKey, '  Daily  ')).label, 'Daily');
   const other = wl.wallets.find((w) => !w.primary);
-  assert.equal(await c.makePrimary(other.identityKey), null);
-  assert.equal((await c.me()).identityKey, other.identityKey);
+  const mp = await c.makePrimary(other.identityKey, 'https://b0-x.com/dashboard#/wallets');
+  assert.ok(safeRedirect(mp.redirectUrl, c.base), 'v1.2: make primary always answers 200 { redirectUrl } on the API origin');
+  await assert.rejects(c.makePrimary(other.identityKey), (e) => e.code === 'invalid_request', 'returnTo is required');
+  assert.equal((await c.me()).identityKey, other.identityKey, 'after the signature round trip, /wallets and /me show the new primary');
   const r = await c.linkWallet('metanet', 'https://b0-x.com/dashboard#/wallets');
   assert.ok(safeRedirect(r.redirectUrl, c.base), 'stub redirect stays on the API origin');
   await assert.rejects(c.linkWallet('evil', 'x'), (e) => e.code === 'invalid_request');
@@ -372,6 +421,8 @@ test('dashboard.html: config metas, hub module, no static wallet scripts, Projec
   const html = readFileSync(new URL('../dashboard.html', import.meta.url), 'utf8');
   assert.match(html, /<meta name="b0x-account-api" content="">/, 'API not configured until the CTO switches it on');
   assert.match(html, /<meta name="b0x-account-client" content="b0-x">/);
+  assert.match(html, /<meta name="b0x-account-scope" content="account">/);
+  assert.match(readFileSync(new URL('../gen.mjs', import.meta.url), 'utf8'), /Going live: api: 'https:\/\/id\.b0-x\.com'/);
   assert.match(html, /<script type="module" src="\/hub\/app.js"><\/script>/);
   assert.match(html, /<script src="\/dash.js" defer><\/script>/);
   assert.doesNotMatch(html, /bwalletx-connect/, 'the connect library is loaded by app.js, and never in stub mode');

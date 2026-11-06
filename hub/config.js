@@ -2,13 +2,16 @@
 // The account API lives on the central login service (id.b0-x.com, pending). Until the CTO switches it on,
 // gen.mjs writes an empty <meta name="b0x-account-api">, and the hub shows "Account service coming soon".
 
+// v1.2: the login service and the account API share one domain. Going live = set ACCOUNT.api in gen.mjs to this.
+export const LIVE_API_BASE = 'https://id.b0-x.com';
+
 export const DEFAULTS = Object.freeze({
-  apiBase: '',                    // e.g. https://id.b0-x.com (no trailing slash). Empty = not configured.
+  apiBase: '',                    // LIVE_API_BASE when live (no trailing slash). Empty = not configured.
   clientId: '',                   // the PKCE public client id the login service registers for b0-x.com
   authorizePath: '/oauth/authorize',
   tokenPath: '/oauth/token',
   logoutPath: '/logout',          // GET <apiBase>/logout?client_id=…&returnTo=… (top-level navigation)
-  scope: '',
+  scope: 'account',
   redirectPath: '/dashboard',     // the exact redirect URI is origin + this path
 });
 
@@ -39,11 +42,20 @@ export function readConfig(doc) {
     authorizePath: meta('b0x-account-authorize') || DEFAULTS.authorizePath,
     tokenPath: meta('b0x-account-token') || DEFAULTS.tokenPath,
     logoutPath: meta('b0x-account-logout') || DEFAULTS.logoutPath,
-    scope: meta('b0x-account-scope'),
+    scope: meta('b0x-account-scope') || DEFAULTS.scope,
   };
 }
 
 export const configured = (cfg) => !!(cfg && cfg.apiBase && cfg.clientId);
+
+/** The URLs the login service matches exactly (v1.2: exact strings, no prefixes; a fragment only on the link one). */
+export function siteUrls(origin) {
+  return {
+    redirect: origin + DEFAULTS.redirectPath,   // OAuth redirect_uri: https://b0-x.com/dashboard
+    logout: origin + '/',                       // logout returnTo: https://b0-x.com/
+    link: origin + '/dashboard#/wallets',       // link and make-primary returnTo: https://b0-x.com/dashboard#/wallets
+  };
+}
 
 /** Stub mode: ?stub=1 anywhere, or automatically on localhost (?stub=0 turns it off there). */
 export function isStub(loc) {
