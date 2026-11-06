@@ -3,7 +3,10 @@
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 
 const ORIGIN = 'https://b0-x.com';
-const OG = `${ORIGIN}/og-b0x-v2.png`;
+// Share cards (og-src/ holds the source of each). Versioned file names: X and LinkedIn cache a card for days.
+// v3 (home, /start): the bWalletX app showcase. v2: the original "Deploy to Bitcoin" card, still on the deploy/docs pages.
+const OG_HOME = { img: `${ORIGIN}/og-b0x-v3.png`, alt: 'b0-x: Every bWalletX app, in one place. A wall of live b*X app windows (bWalletX, bMusicX, bChatX, bGamesX and more) with Live status chips, and an Explore the apps button.' };
+const OG = { img: `${ORIGIN}/og-b0x-v2.png`, alt: 'b0-x: Deploy to Bitcoin. Early access.' };
 const NAV = [
   ['/#sites', 'Sites'], ['/deploy', 'Deploy'], ['/storage', 'Storage'], ['/publish', 'Publish'], ['/names', 'Names'],
   ['/pricing', 'Pricing'], ['/docs', 'Docs'], ['/dashboard', 'Dashboard'], ['/about', 'About'],
@@ -44,7 +47,7 @@ const cta = (extra = '') => `<div class="ctas"><button class="btn gb" type="butt
 // foot: replaces the full footer. cls: a class on <body>.
 // small: shows the "Beta: use small amounts" strip at the top. Off everywhere for now: b0-x takes no payment yet.
 // When deploy payments open, add `small: true` to the /deploy, /pricing, /new and /dashboard pages below.
-function layout({ path, title, desc, body, script = '', tail = '', top, wallet = true, foot, cls, small = false }) {
+function layout({ path, title, desc, body, script = '', tail = '', top, wallet = true, foot, cls, small = false, og = OG }) {
   const url = ORIGIN + (path === '/' ? '/' : path);
   const links = NAV.map(([h, t]) => `<a href="${h}"${h === path ? ' aria-current="page"' : ''}>${t}</a>`).join('');
   return `<!doctype html>
@@ -60,13 +63,15 @@ function layout({ path, title, desc, body, script = '', tail = '', top, wallet =
 <meta property="og:site_name" content="b0-x">
 <meta property="og:title" content="${title}">
 <meta property="og:description" content="${desc}">
-<meta property="og:image" content="${OG}">
+<meta property="og:image" content="${og.img}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="${og.alt}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${title}">
 <meta name="twitter:description" content="${desc}">
-<meta name="twitter:image" content="${OG}">
+<meta name="twitter:image" content="${og.img}">
+<meta name="twitter:image:alt" content="${og.alt}">
 <meta name="theme-color" content="#050506">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -96,7 +101,7 @@ ${foot ?? `<footer class="site wrap">
   <p class="fine">b0-x · part of the bWalletX family · publishes with bWebX · runs on Bitcoin SV. The CLI and config shown on this site are sketches of the planned design and may change.</p>
   <p class="disclose">${DISCLOSE}</p>
 </footer>`}
-${wallet ? `<script src="https://unpkg.com/@bwalletx/connect@0.5.0/dist/bwalletx-connect.global.js"></script>
+${wallet ? `<script src="https://unpkg.com/@bwalletx/connect@0.7.0/dist/bwalletx-connect.global.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="/bwx.js"></script>
 ` : ''}<script>
@@ -160,8 +165,9 @@ const homeTop = (links) => `<header class="hx-top">
 const pages = {};
 
 pages['index'] = layout({
-  path: '/', title: 'b0-x · Deploy to Bitcoin',
-  desc: 'Websites on Bitcoin: publish a static site on chain and serve it through the b0-x gateway. See every b*X site and where it stands. Early access.',
+  path: '/', title: 'b0-x · Every bWalletX app, in one place',
+  desc: 'Every app in the bWalletX family in one place, from bWalletX and bChatX to bMusicX, with where each one stands today: live, coming soon or a placeholder.',
+  og: OG_HOME,
   top: homeTop,
   tail: '<script src="/home.js"></script>',
   body: `<section class="hx-sites" id="sites" aria-roledescription="carousel" aria-label="b*X sites">
@@ -542,6 +548,7 @@ const svc = (s) => `<li><a class="sp-svc" href="https://${s.domain}" target="_bl
 pages['start'] = layout({
   path: '/start', title: 'Start here · b0-x',
   desc: 'New to the b*X sites? Get bWalletX, pick a live service, and meet people in its chat room on bChatX.',
+  og: OG_HOME,
   cls: 'sp-page',
   wallet: false,
   top: (links) => `<header class="wrap nav site sp-nav">
