@@ -26,6 +26,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
+<meta name="robots" content="noindex">
+<meta name="b0x-account-api" content="">
+<meta name="b0x-account-client" content="b0-x">
+<link rel="stylesheet" href="/hub/hub.css">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -50,7 +54,8 @@
   <div class="nav-right"><span data-bwx></span><button class="menu-btn" type="button" aria-controls="links" aria-expanded="false" aria-label="Menu">&#9776;</button></div>
 </header>
 <main id="main">
-<section class="dsec" data-dashboard><div class="wrap" id="dash-app"><p class="small">Loading…</p><noscript><p>The dashboard needs JavaScript.</p></noscript></div></section>
+<section class="dsec hub-sec" data-dashboard><div class="wrap" id="hub"><p class="small">Loading…</p><noscript><p>Your account needs JavaScript.</p></noscript></div></section>
+<div class="toast" id="hub-toast" role="status" aria-live="polite"></div>
 </main>
 <footer class="site wrap">
   <div class="fgrid">
@@ -62,13 +67,11 @@
   <p class="fine">b0-x · part of the bWalletX family · publishes with bWebX · runs on Bitcoin SV. The CLI and config shown on this site are sketches of the planned design and may change.</p>
   <p class="disclose">b0-x is run by The Bitcoin Corporation Ltd, registered in England and Wales no. 16735102, Flat 6, 315 Barking Road, London E13 8EE.</p>
 </footer>
-<script src="https://unpkg.com/@bwalletx/connect@0.7.0/dist/bwalletx-connect.global.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script src="/bwx.js"></script>
 <script>
 (()=>{const b=document.querySelector('.menu-btn'),l=document.getElementById('links');b.onclick=()=>{const o=l.classList.toggle('open');b.setAttribute('aria-expanded',o)}})();
 
 </script>
 <script src="/dash.js" defer></script>
+<script type="module" src="/hub/app.js"></script>
 </body>
 </html>

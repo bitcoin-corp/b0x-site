@@ -9,8 +9,9 @@
   "scripts": {
     "publish-site": "node tools/publish/cli.mjs",
     "test:publish": "node --test tools/publish/lib.test.mjs",
-    "test": "node --test tools/publish/lib.test.mjs test/gateway.test.mjs test/dash.test.mjs test/sites.test.mjs test/check-start.test.mjs",
+    "test": "node --test tools/publish/lib.test.mjs test/gateway.test.mjs test/dash.test.mjs test/sites.test.mjs test/check-start.test.mjs test/hub.test.mjs",
     "test:gateway": "node --test test/gateway.test.mjs test/dash.test.mjs",
+    "test:hub": "node --test test/hub.test.mjs",
     "shots": "node tools/shots.mjs",
     "check:start": "node tools/check-start.mjs"
   }

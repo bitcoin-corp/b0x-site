@@ -47,7 +47,8 @@ const cta = (extra = '') => `<div class="ctas"><button class="btn gb" type="butt
 // foot: replaces the full footer. cls: a class on <body>.
 // small: shows the "Beta: use small amounts" strip at the top. Off everywhere for now: b0-x takes no payment yet.
 // When deploy payments open, add `small: true` to the /deploy, /pricing, /new and /dashboard pages below.
-function layout({ path, title, desc, body, script = '', tail = '', top, wallet = true, foot, cls, small = false, og = OG }) {
+// head: extra tags at the end of <head> (the dashboard's account config and stylesheet).
+function layout({ path, title, desc, body, script = '', tail = '', top, wallet = true, foot, cls, small = false, og = OG, head = '' }) {
   const url = ORIGIN + (path === '/' ? '/' : path);
   const links = NAV.map(([h, t]) => `<a href="${h}"${h === path ? ' aria-current="page"' : ''}>${t}</a>`).join('');
   return `<!doctype html>
@@ -78,7 +79,7 @@ function layout({ path, title, desc, body, script = '', tail = '', top, wallet =
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
-</head>
+${head}</head>
 <body${cls ? ` class="${cls}"` : ''}>
 <a class="skip" href="#main">Skip to content</a>
 ${small ? smallBar + '\n' : ''}${strip}
@@ -158,7 +159,7 @@ const homeTop = (links) => `<header class="hx-top">
   <p class="hx-eye">The bWalletX family · live status</p>
   <h1 class="hx-h1">${B}<span class="sr">b</span><span class="hx-nm">0-x</span></h1>
   <p class="hx-lede">Every bWalletX app in one place, and where each one stands today: live, coming soon or a placeholder.</p>
-  <div class="ctas"><a class="btn wt" href="#sites">Explore the apps</a><a class="btn gb" href="https://bwalletx.com">Get bWalletX</a></div>
+  <div class="ctas"><a class="btn wt" href="#sites">Explore the apps</a><a class="btn gb" href="https://bwalletx.com">Get bWalletX</a><a class="btn ghost" href="/dashboard" data-open-account hidden>Open your account</a></div>
 </div>
 </header>`;
 
@@ -169,7 +170,7 @@ pages['index'] = layout({
   desc: 'Every app in the bWalletX family in one place, from bWalletX and bChatX to bMusicX, with where each one stands today: live, coming soon or a placeholder.',
   og: OG_HOME,
   top: homeTop,
-  tail: '<script src="/home.js"></script>',
+  tail: '<script src="/home.js"></script>\n<script type="module" src="/hub/landing.js"></script>',
   body: `<section class="hx-sites" id="sites" aria-roledescription="carousel" aria-label="b*X sites">
   <p class="hx-kick">Pick an app</p>
   <div class="hx-search"><input type="search" id="hx-q" placeholder="Search ${gallery.length} apps" aria-label="Search apps by name, domain or what they do" autocomplete="off" spellcheck="false"><kbd aria-hidden="true">/</kbd></div>
@@ -483,12 +484,23 @@ $ npx b0-x names point my-site latest</pre>
 </div></div></section>`,
 });
 
-// Real dashboard: rendered client-side by /dash.js from GET /api/me (bWalletX session cookie).
+// The account hub (/dashboard): rendered client-side by /hub/app.js from the Account API (contract v1.1,
+// handoffs model/31), with b0-x's own Projects (/dash.js, GET /api/me) as its Projects section.
+// ACCOUNT.api empty = the API isn't live yet: the hub shows "Account service coming soon" and Projects works.
+// wallet: false because hub/app.js loads the Connect bWalletX scripts itself, and never in stub mode.
+const ACCOUNT = { api: '', client: 'b0-x' };
 pages['dashboard'] = layout({
   path: '/dashboard', title: 'Dashboard · b0-x',
   desc: 'Your b0-x dashboard: the sites you have published on chain, every version, live links and domains. Sign in with bWalletX.',
-  body: `<section class="dsec" data-dashboard><div class="wrap" id="dash-app"><p class="small">Loading…</p><noscript><p>The dashboard needs JavaScript.</p></noscript></div></section>`,
-  script: '', tail: '<script src="/dash.js" defer></script>',
+  head: `<meta name="robots" content="noindex">
+<meta name="b0x-account-api" content="${ACCOUNT.api}">
+<meta name="b0x-account-client" content="${ACCOUNT.client}">
+<link rel="stylesheet" href="/hub/hub.css">
+`,
+  wallet: false,
+  body: `<section class="dsec hub-sec" data-dashboard><div class="wrap" id="hub"><p class="small">Loading…</p><noscript><p>Your account needs JavaScript.</p></noscript></div></section>
+<div class="toast" id="hub-toast" role="status" aria-live="polite"></div>`,
+  script: '', tail: '<script src="/dash.js" defer></script>\n<script type="module" src="/hub/app.js"></script>',
 });
 
 pages['new'] = layout({

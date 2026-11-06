@@ -1,8 +1,10 @@
-// b0-x dashboard (/dashboard). Reads GET /api/me (session cookie from Connect bWalletX) and renders
-// Projects -> project detail (Deployments, Domains). Hash routes: #/p/<name>, #/p/<name>/domains.
+// b0-x Projects, inside the account hub (/dashboard#/projects). Reads GET /api/me (session cookie from
+// Connect bWalletX) and renders Projects -> project detail (Deployments, Domains).
+// Hash routes: #/projects, #/p/<name>, #/p/<name>/domains. The hub calls window.b0xProjects.mount(el)
+// when one of those routes is open, and unmount() when another tab is; stub mode passes a sample loadMe.
 (() => {
-  const app = document.getElementById('dash-app');
-  if (!app) return;
+  let app = null;
+  let loadMe = null; // optional: () => Promise<me>, used by the hub's stub mode instead of fetch
   const mockQ = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('mock') === '1' ? '?mock=1' : '';
   const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const short = (k) => k.slice(0, 6) + '…' + k.slice(-4);
@@ -17,7 +19,7 @@
 
   const signIn = (msg = '') => {
     app.innerHTML = `<div class="dempty"><img src="/logo.svg" width="40" height="56" alt="">
-      <h2>Sign in to your dashboard</h2>
+      <h2>Sign in to see your projects</h2>
       <p class="lede">Your projects, on-chain versions and names live with your wallet key. Connect bWalletX to see them.</p>
       ${msg ? `<p class="small" style="color:#ff8a7a">${esc(msg)}</p>` : ''}
       <div class="ctas" style="justify-content:center"><button class="btn gb" type="button" id="dsign">Connect bWalletX</button><a class="btn ghost" href="/new">New project</a></div>
@@ -26,9 +28,11 @@
   };
 
   async function load() {
+    if (!app) return;
     busy = true;
     app.innerHTML = '<p class="small" aria-live="polite">Loading your projects…</p>';
     try {
+      if (loadMe) { me = await loadMe(); route(); return; }
       const r = await fetch('/api/me' + mockQ, { credentials: 'same-origin' });
       if (r.status === 401) { me = null; return signIn(); }
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -64,9 +68,9 @@
 
   function detail(name, tab) {
     const p = me.projects.find((x) => x.name === name);
-    if (!p) { app.innerHTML = head('Not found', '<a href="#/">← Projects</a>') + `<p>You don't own a project called <b>${esc(name)}</b>.</p>`; return; }
+    if (!p) { app.innerHTML = head('Not found', '<a href="#/projects">← Projects</a>') + `<p>You don't own a project called <b>${esc(name)}</b>.</p>`; return; }
     const tabs = [['', 'Deployments'], ['domains', 'Domains']].map(([k, t]) => `<a role="tab" href="#/p/${esc(name)}${k ? '/' + k : ''}" aria-selected="${tab === k}">${t}</a>`).join('');
-    const top = head(esc(name), `<a href="#/">← Projects</a>`, `<a class="btn ghost" href="${esc(p.urls.path)}" target="_blank" rel="noopener">Visit ↗</a>`) + `<nav class="tabs" role="tablist">${tabs}</nav>`;
+    const top = head(esc(name), `<a href="#/projects">← Projects</a>`, `<a class="btn ghost" href="${esc(p.urls.path)}" target="_blank" rel="noopener">Visit ↗</a>`) + `<nav class="tabs" role="tablist">${tabs}</nav>`;
     app.innerHTML = top + (tab === 'domains' ? domains(p) : deployments(p));
     if (tab === 'domains') checkSub(p);
   }
@@ -108,13 +112,14 @@ CNAME  www    cname.vercel-dns.com</pre>
   }
 
   function route() {
-    if (!me) return;
+    if (!me || !app) return;
     const m = /^#\/p\/([a-z0-9-]{1,40})(?:\/(domains))?$/.exec(location.hash);
     if (m) detail(m[1], m[2] || ''); else list();
-    window.scrollTo(0, 0);
   }
 
-  window.addEventListener('hashchange', route);
-  document.addEventListener('b0x-wallet', (e) => { const k = e.detail?.identityKey || null; if (!busy && k !== (me?.identityKey || null)) load(); });
-  load();
+  document.addEventListener('b0x-wallet', (e) => { const k = e.detail?.identityKey || null; if (app && !loadMe && !busy && k !== (me?.identityKey || null)) load(); });
+  window.b0xProjects = {
+    mount(el, opts = {}) { app = el; if ((opts.loadMe || null) !== loadMe) me = null; loadMe = opts.loadMe || null; if (me) route(); else if (!busy) load(); },
+    unmount() { app = null; },
+  };
 })();

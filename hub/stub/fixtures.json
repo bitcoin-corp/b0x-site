@@ -1,0 +1,411 @@
+{
+  "_comment": "STUB FIXTURE. Sample data only: Priya Nair ($priya) is a made-up person, not a real account, key or session. Each response is shaped exactly like the b0-x Account API contract v1 (handoffs model/30 + model/31 incl. v1.1, 6 Nov 2026). Identity keys are placeholder strings, not real keys.",
+  "now": "2026-11-06T09:30:00Z",
+  "responses": {
+    "GET /api/account/me": {
+      "accountId": "acc_sample_7Qm2xP",
+      "handle": "priya",
+      "displayName": "Priya Nair",
+      "paymail": "priya@bwalletx.com",
+      "avatarUrl": null,
+      "createdAt": "2026-10-01T10:14:00Z",
+      "idCheck": "none",
+      "identityKey": "02ab5e0c1d2e3f405162738495a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c7c83",
+      "counts": {
+        "services": 6,
+        "wallets": 3,
+        "linked": 4,
+        "sessions": 4
+      }
+    },
+    "GET /api/account/services": {
+      "services": [
+        {
+          "id": "bmessagex",
+          "name": "bMessageX",
+          "url": "https://bmessagex.com",
+          "icon": "/hub/stub/icons/bmessagex.svg",
+          "status": "active",
+          "lastUsedAt": "2026-11-06T08:52:00Z",
+          "openUrl": "https://bmessagex.com/?sso=1",
+          "summary": {
+            "label": "Unread",
+            "value": "3"
+          },
+          "settingsUrl": "https://bmessagex.com/settings"
+        },
+        {
+          "id": "bchatx",
+          "name": "bChatX",
+          "url": "https://www.bchatx.com",
+          "icon": "/hub/stub/icons/bchatx.svg",
+          "status": "active",
+          "lastUsedAt": "2026-11-06T09:05:00Z",
+          "openUrl": "https://www.bchatx.com/?sso=1",
+          "summary": {
+            "label": "Rooms",
+            "value": "4"
+          },
+          "settingsUrl": "https://www.bchatx.com/settings"
+        },
+        {
+          "id": "b0-x",
+          "name": "b0-x",
+          "url": "https://b0-x.com",
+          "icon": "/hub/stub/icons/b0-x.svg",
+          "status": "active",
+          "lastUsedAt": "2026-11-06T09:28:00Z",
+          "openUrl": "https://b0-x.com/dashboard#/projects",
+          "summary": {
+            "label": "Projects",
+            "value": "2"
+          },
+          "settingsUrl": null
+        },
+        {
+          "id": "bjobsx",
+          "name": "bJobsX",
+          "url": "https://bjobsx.com",
+          "icon": "/hub/stub/icons/bjobsx.svg",
+          "status": "active",
+          "lastUsedAt": "2026-11-03T17:40:00Z",
+          "openUrl": "https://bjobsx.com/?sso=1",
+          "summary": {
+            "label": "Applications",
+            "value": "2"
+          },
+          "settingsUrl": null
+        },
+        {
+          "id": "bmusicx",
+          "name": "bMusicX",
+          "url": "https://bmusicx.com",
+          "icon": "/hub/stub/icons/bmusicx.svg",
+          "status": "active",
+          "lastUsedAt": "2026-10-25T21:12:00Z",
+          "openUrl": "https://bmusicx.com/?sso=1",
+          "summary": {
+            "label": "Saved tracks",
+            "value": "18"
+          },
+          "settingsUrl": "https://bmusicx.com/settings"
+        },
+        {
+          "id": "bmintx",
+          "name": "bMintX",
+          "url": "https://bmintx.com",
+          "icon": "/hub/stub/icons/bmintx.svg",
+          "status": "active",
+          "lastUsedAt": "2026-10-19T12:03:00Z",
+          "openUrl": "https://bmintx.com/?sso=1",
+          "summary": null,
+          "settingsUrl": null
+        },
+        {
+          "id": "bmailx",
+          "name": "bMailX",
+          "url": "https://bmailx.com",
+          "icon": "/hub/stub/icons/bmailx.svg",
+          "status": "available",
+          "lastUsedAt": null,
+          "openUrl": "https://bmailx.com/?sso=1",
+          "summary": null,
+          "settingsUrl": null
+        },
+        {
+          "id": "bsocialx",
+          "name": "bSocialX",
+          "url": "https://bsocialx.com",
+          "icon": "/hub/stub/icons/bsocialx.svg",
+          "status": "available",
+          "lastUsedAt": null,
+          "openUrl": "https://bsocialx.com/?sso=1",
+          "summary": null,
+          "settingsUrl": null
+        },
+        {
+          "id": "bstorex",
+          "name": "bStoreX",
+          "url": "https://bstorex.com",
+          "icon": "/hub/stub/icons/bstorex.svg",
+          "status": "available",
+          "lastUsedAt": null,
+          "openUrl": "https://bstorex.com/?sso=1",
+          "summary": null,
+          "settingsUrl": null
+        },
+        {
+          "id": "bwebx",
+          "name": "bWebX",
+          "url": "https://bwebx.com",
+          "icon": "/hub/stub/icons/bwebx.svg",
+          "status": "available",
+          "lastUsedAt": null,
+          "openUrl": "https://bwebx.com/?sso=1",
+          "summary": null,
+          "settingsUrl": null
+        },
+        {
+          "id": "bticketsx",
+          "name": "bTicketsX",
+          "url": "https://bticketsx.com",
+          "icon": "/hub/stub/icons/bticketsx.svg",
+          "status": "coming_soon",
+          "lastUsedAt": null,
+          "openUrl": null,
+          "summary": null,
+          "settingsUrl": null
+        },
+        {
+          "id": "bmarketingx",
+          "name": "bMarketingX",
+          "url": "https://bmarketingx.com",
+          "icon": "/hub/stub/icons/bmarketingx.svg",
+          "status": "coming_soon",
+          "lastUsedAt": null,
+          "openUrl": null,
+          "summary": null,
+          "settingsUrl": null
+        }
+      ]
+    },
+    "GET /api/account/wallets": {
+      "wallets": [
+        {
+          "kind": "bwalletx",
+          "identityKey": "02ab5e0c1d2e3f405162738495a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c7c83",
+          "label": "bWalletX",
+          "primary": true,
+          "lastSeenAt": "2026-11-06T09:28:00Z",
+          "canUnlink": false,
+          "unlinkBlockedBy": "primary_wallet"
+        },
+        {
+          "kind": "bwalletx",
+          "identityKey": "03f1d40a1b2c3d4e5f60718293a4b5c6d7e8f9011a2b3c4d5e6f708192a052e1",
+          "label": "Work wallet",
+          "primary": false,
+          "lastSeenAt": "2026-10-30T14:10:00Z",
+          "canUnlink": true,
+          "unlinkBlockedBy": null
+        },
+        {
+          "kind": "metanet",
+          "identityKey": "03c19b7a6f5e4d3c2b1a09f8e7d6c5b4a39281706f5e4d3c2b1a0918f7e69e20",
+          "label": "Metanet Desktop",
+          "primary": false,
+          "lastSeenAt": null,
+          "canUnlink": true,
+          "unlinkBlockedBy": null
+        }
+      ],
+      "linked": [
+        {
+          "provider": "x",
+          "handle": "priya_sample",
+          "email": null,
+          "verified": true,
+          "linkedAt": "2026-10-01T10:20:00Z",
+          "canUnlink": true,
+          "unlinkBlockedBy": null
+        },
+        {
+          "provider": "google",
+          "handle": null,
+          "email": null,
+          "verified": true,
+          "linkedAt": "2026-10-02T08:01:00Z",
+          "canUnlink": true,
+          "unlinkBlockedBy": null
+        },
+        {
+          "provider": "linkedin",
+          "handle": null,
+          "email": null,
+          "verified": true,
+          "linkedAt": "2026-10-12T16:33:00Z",
+          "canUnlink": true,
+          "unlinkBlockedBy": null
+        },
+        {
+          "provider": "handcash",
+          "handle": "priyasample",
+          "email": null,
+          "verified": true,
+          "linkedAt": "2026-10-20T11:05:00Z",
+          "canUnlink": true,
+          "unlinkBlockedBy": null
+        }
+      ]
+    },
+    "GET /api/account/sessions": {
+      "sessions": [
+        {
+          "id": "ses_d01_mac",
+          "current": true,
+          "device": "Chrome on macOS",
+          "signInMethod": "bwalletx",
+          "createdAt": "2026-11-01T09:00:00Z",
+          "lastActiveAt": "2026-11-06T09:30:00Z",
+          "approxLocation": null,
+          "apps": [
+            {
+              "service": "b0-x",
+              "lastActiveAt": "2026-11-06T09:30:00Z"
+            },
+            {
+              "service": "bchatx",
+              "lastActiveAt": "2026-11-06T09:05:00Z"
+            }
+          ]
+        },
+        {
+          "id": "ses_d02_iphone",
+          "current": false,
+          "device": "Safari on iOS",
+          "signInMethod": "bwalletx",
+          "createdAt": "2026-10-28T07:40:00Z",
+          "lastActiveAt": "2026-11-06T07:15:00Z",
+          "approxLocation": null,
+          "apps": [
+            {
+              "service": "bmessagex",
+              "lastActiveAt": "2026-11-06T07:15:00Z"
+            },
+            {
+              "service": "bmusicx",
+              "lastActiveAt": "2026-10-25T21:12:00Z"
+            }
+          ]
+        },
+        {
+          "id": "ses_d03_win",
+          "current": false,
+          "device": "Firefox on Windows",
+          "signInMethod": "x",
+          "createdAt": "2026-10-29T12:00:00Z",
+          "lastActiveAt": "2026-11-03T17:40:00Z",
+          "approxLocation": null,
+          "apps": [
+            {
+              "service": "bjobsx",
+              "lastActiveAt": "2026-11-03T17:40:00Z"
+            }
+          ]
+        },
+        {
+          "id": "ses_d04_edge",
+          "current": false,
+          "device": "Edge on Windows",
+          "signInMethod": "metanet",
+          "createdAt": "2026-10-14T05:30:00Z",
+          "lastActiveAt": "2026-10-17T19:45:00Z",
+          "approxLocation": null,
+          "apps": [
+            {
+              "service": "b0-x",
+              "lastActiveAt": "2026-10-17T19:45:00Z"
+            },
+            {
+              "service": "bmintx",
+              "lastActiveAt": "2026-10-17T19:20:00Z"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "errors": {
+    "400": {
+      "error": "invalid_request",
+      "message": "A wallet name needs 1 to 40 characters."
+    },
+    "401": {
+      "error": "unauthorized",
+      "message": "Your sign-in has ended."
+    },
+    "403": {
+      "error": "forbidden",
+      "message": "You can’t change that from here."
+    },
+    "404": {
+      "error": "not_found",
+      "message": "That isn’t on your account any more."
+    },
+    "409": {
+      "error": "conflict",
+      "reason": "last_sign_in_method",
+      "message": "This is the only way left to sign in to your account, so it can’t be unlinked."
+    },
+    "429": {
+      "error": "rate_limited",
+      "message": "Too many requests. Try again in about a minute."
+    },
+    "500": {
+      "error": "server_error",
+      "message": "Something went wrong on our side."
+    },
+    "409_primary": {
+      "error": "conflict",
+      "reason": "primary_wallet",
+      "message": "This is your primary wallet. Make another wallet primary first, then unlink this one."
+    }
+  },
+  "projects": {
+    "_comment": "Sample for the b0-x Projects section in stub mode, shaped like GET /api/me on b0-x.com (api/me.js).",
+    "identityKey": "02ab5e0c1d2e3f405162738495a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c7c83",
+    "projects": [
+      {
+        "name": "priya-notes",
+        "current": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa_0",
+        "source": null,
+        "versions": [
+          {
+            "n": 1,
+            "dir": "9999999999999999999999999999999999999999999999999999999999999999_0",
+            "at": "2026-10-20T10:00:00Z",
+            "note": "v1",
+            "txids": [
+              "9999999999999999999999999999999999999999999999999999999999999999"
+            ]
+          },
+          {
+            "n": 2,
+            "dir": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa_0",
+            "at": "2026-11-04T16:20:00Z",
+            "note": "v2",
+            "txids": [
+              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ]
+          }
+        ],
+        "urls": {
+          "path": "https://b0-x.com/s/priya-notes/",
+          "sub": "https://priya-notes.b0-x.com/",
+          "ordfs": "https://ordfs.network/content/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa_0/"
+        }
+      },
+      {
+        "name": "priya-portfolio",
+        "current": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb_0",
+        "source": null,
+        "versions": [
+          {
+            "n": 1,
+            "dir": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb_0",
+            "at": "2026-10-28T09:12:00Z",
+            "note": "v1",
+            "txids": [
+              "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            ]
+          }
+        ],
+        "urls": {
+          "path": "https://b0-x.com/s/priya-portfolio/",
+          "sub": "https://priya-portfolio.b0-x.com/",
+          "ordfs": "https://ordfs.network/content/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb_0/"
+        }
+      }
+    ]
+  }
+}
