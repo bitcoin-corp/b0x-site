@@ -103,7 +103,7 @@ ${foot ?? `<footer class="site wrap">
   <p class="disclose">${DISCLOSE}</p>
 </footer>`}
 ${wallet ? `<script src="https://unpkg.com/@bwalletx/connect@0.9.0/dist/bwalletx-connect.global.js" integrity="sha384-ljVpAVRFkV0Eog6yjxI9c5nJKl0Ri9p77SuIPOohuhh6O1SygKqR1cprJ7kJfrK5" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" integrity="sha384-mZT2gIty7ZDdOGkxfP6joZcYdMW1Jvj9dRlfpTmaJAKKXTqzygtB22k7FLe+KZC1" crossorigin="anonymous"></script>
 <script src="/bwx.js"></script>
 ` : ''}<script>
 (()=>{const b=document.querySelector('.menu-btn'),l=document.getElementById('links');b.onclick=()=>{const o=l.classList.toggle('open');b.setAttribute('aria-expanded',o)}})();

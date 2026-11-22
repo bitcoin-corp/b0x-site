@@ -72,3 +72,23 @@ test('gateway with fake ORDFS', async () => {
   assert.equal((await gateway({ host: 'demo', path: 'img/a.jpg' }, f)).status, 200);
   assert.ok(!seen.some((u) => u.includes(X)), 'never fetched an unregistered outpoint');
 });
+
+test('gateway: /s/<name>/ is sandboxed off the b0-x.com origin; <name>.b0-x.com is its own origin', async () => {
+  setProvider(prov);
+  const f = async (url) => {
+    if (url.endsWith(`${B}?raw=1`)) return Response.json({ 'index.html': `ord://${F}`, 'app.js': `ord://${F}` });
+    if (url.endsWith(F)) return new Response('<script>localStorage</script>', { headers: { 'content-type': 'text/html' } });
+    return new Response('', { status: 404 });
+  };
+  const CSP = 'sandbox allow-scripts allow-forms allow-popups';
+  for (const [spec, path] of [['demo', ''], ['demo', 'app.js'], ['demo', 'missing.png'], ['nope', ''], ['demo', null]]) {
+    const r = await gateway({ spec, path }, f);
+    assert.equal(r.headers['content-security-policy'], CSP, `${spec}/${path}`);
+    assert.ok(!/allow-same-origin/.test(r.headers['content-security-policy']));
+  }
+  // The sandboxed page has an opaque origin: its own module scripts and fetches are cross-origin, so they need CORS.
+  assert.equal((await gateway({ spec: 'demo', path: 'app.js' }, f)).headers['access-control-allow-origin'], '*');
+  const sub = await gateway({ host: 'demo', path: '' }, f);
+  assert.equal(sub.status, 200);
+  assert.equal(sub.headers['content-security-policy'], undefined, 'subdomain sites are not b0-x.com');
+});

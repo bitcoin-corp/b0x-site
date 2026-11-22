@@ -35,8 +35,20 @@ main{max-width:520px;text-align:center}h1{font:700 64px/1 'Space Grotesk',system
 a{color:#ffd24d}.v{font-size:13px;color:#9a968b}</style></head><body><main><h1>${status}</h1><p>${esc(msg)}</p>${verify}<p><a href="https://b0-x.com/">b0-x.com</a></p></main></body></html>`;
 }
 
+// /s/<name>/ serves on-chain HTML from the b0-x.com origin, which holds the session cookie, connect's pairing key in
+// localStorage and same-origin /api. So every /s/ response is sandboxed into an opaque origin (no allow-same-origin):
+// its scripts run but can't read b0-x.com storage, cookies or /api. Its own module scripts and fetches are then
+// cross-origin, so they get CORS (public on-chain bytes, never credentialed). <name>.b0-x.com is already its own
+// origin and is left as is. Long term: serve published sites on <name>.b0-x.com only.
+export const S_SANDBOX = 'sandbox allow-scripts allow-forms allow-popups';
+export async function gateway(args, f = fetch) {
+  const out = await route(args, f);
+  if (args.host != null) return out;
+  return { ...out, headers: { ...out.headers, 'content-security-policy': S_SANDBOX, 'access-control-allow-origin': '*' } };
+}
+
 // Core: (spec|host, path) -> { status, headers, body }. No req/res so it is testable.
-export async function gateway({ spec, host, path = '', search = '' }, f = fetch) {
+async function route({ spec, host, path = '', search = '' }, f = fetch) {
   const html = (status, title, msg, dir) => ({ status, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=60' }, body: page(status, title, msg, dir) });
   const parsed = parseSpec(host ?? spec);
   if (!parsed) return html(404, 'Not found', 'No site by that name.');
