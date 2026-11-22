@@ -8,9 +8,9 @@
    0.9.0: on a phone the sheet says "Open bWalletX" (no QR to scan on the same phone). The challenge is fetched first and
    folded into the pairing link, so bWalletX shows one "Connect and sign in" card, then sends the user back to the
    site ROOT with a #bwx=… fragment (often in a new tab). Connect strips that fragment as soon as it loads, so it must
-   load before every other script; this file then finishes the sign-in there (resumeReturnedPairing). The /verify
-   ticket for that challenge is kept in localStorage under its nonce, because the return tab is not the tab that
-   fetched it. */
+   load before every other script; this file then finishes the sign-in there (resumeReturnedPairing). /challenge puts
+   its sealed ticket in an HttpOnly cookie for that nonce, so the return tab (same browser) has it, and /verify clears
+   it on every attempt: page scripts never see it. */
 (() => {
   const C = window.bWalletXConnect;
   const slots = [...document.querySelectorAll('[data-bwx]')];
@@ -82,26 +82,8 @@
     if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
     return j;
   };
-  // The challenge route seals a ticket that /verify needs back; the package's own flows post without it.
-  let ticket = null;
-  const postT = async (url, b) => {
-    const j = await post(url, url.endsWith('/verify') ? { ...b, ticket } : b);
-    if (url.endsWith('/challenge')) ticket = j.ticket;
-    return j;
-  };
-  const routes = { challengeUrl: '/api/bwalletx/challenge', verifyUrl: '/api/bwalletx/verify', post: postT };
-  // 0.9.0 phone return: the tab bWalletX opens needs the ticket of the challenge folded into the pairing link.
-  // Kept under its nonce for at most 10 minutes (the challenge itself expires in 2), taken once.
-  const TK = 'b0x:bwx-ticket:';
-  const ls = (() => { try { return window.localStorage; } catch { return null; } })();
-  const pruneTickets = () => { try {
-    for (let i = ls.length - 1; i >= 0; i--) {
-      const k = ls.key(i);
-      if (k && k.startsWith(TK)) { const v = JSON.parse(ls.getItem(k) || '{}'); if (!(Date.now() - v.at < 600000)) ls.removeItem(k); }
-    }
-  } catch {} };
-  const keepTicket = (nonce, t) => { try { pruneTickets(); ls.setItem(TK + nonce, JSON.stringify({ t, at: Date.now() })); } catch {} };
-  const takeTicket = (nonce) => { try { const v = JSON.parse(ls.getItem(TK + nonce) || 'null'); ls.removeItem(TK + nonce); return v && v.t; } catch { return null; } };
+  // /challenge sets the sealed ticket as an HttpOnly cookie for its nonce; /verify reads and clears it (same origin).
+  const routes = { challengeUrl: '/api/bwalletx/challenge', verifyUrl: '/api/bwalletx/verify', post };
   const logout = () => post('/api/bwalletx/session', {}).catch(() => {});
   let pairing = null; // AbortController for a phone pairing that is waiting on the QR
   let modal = null;
@@ -136,16 +118,15 @@
     // bWalletX to send the user back here (to the site root, which finishes the sign-in: see resume below).
     const phone = !!C.isTouchDevice?.() && location.protocol === 'https:';
     let pre = null;
-    if (phone && C.foldableLogin) pre = await postT('/api/bwalletx/challenge', {}).catch(() => null);
+    if (phone && C.foldableLogin) pre = await post('/api/bwalletx/challenge', {}).catch(() => null);
     if (ac.signal.aborted) return;
     const login = pre ? C.foldableLogin(pre, location.origin) : undefined;
-    if (login) keepTicket(pre.nonce, ticket);
     try {
       const r = await C.signInWithBwalletX({
-        // The prefetched challenge is used once (its ticket is the current one); any later one is fetched fresh.
+        // The prefetched challenge is used once; any later one is fetched fresh (each has its own ticket cookie).
         challenge: (identityKey) => {
           const c = pre; pre = null;
-          return c && !identityKey ? Promise.resolve(c) : postT('/api/bwalletx/challenge', { identityKey });
+          return c && !identityKey ? Promise.resolve(c) : post('/api/bwalletx/challenge', { identityKey });
         },
         pairing: {
           signal: ac.signal,
@@ -175,7 +156,7 @@
           onCode: (code) => { const el = document.getElementById('bwxCode'); if (el) el.innerHTML = `Check your wallet shows <span class="bwx-code">${esc(code)}</span>, then tap Connect.`; },
         },
       });
-      const v = await postT('/api/bwalletx/verify', { identityKey: r.identityKey, nonce: r.nonce, signature: r.signature });
+      const v = await post('/api/bwalletx/verify', { identityKey: r.identityKey, nonce: r.nonce, signature: r.signature });
       // Signed in: go to the dashboard (pages that render it themselves listen for b0x-wallet instead).
       signedInAs(v.identityKey);
     } catch (e) {
@@ -225,7 +206,7 @@
     }).catch(() => {});
   };
   // 0.9.0: bWalletX sent the user back here (#bwx=ok&rid=…, already stripped by connect) after "Connect and sign in"
-  // on this phone. Finish the pairing this browser saved and post the folded sign-in with its kept ticket.
+  // on this phone. Finish the pairing this browser saved and post the folded sign-in (its ticket is in a cookie).
   async function resume() {
     if (!C.hasReturnFragment?.() || !C.resumeReturnedPairing) return false;
     const r = await C.resumeReturnedPairing().catch(() => null);
@@ -234,12 +215,12 @@
       let v;
       if (r.login) {
         const { identityKey, nonce, signature } = r.login;
-        v = await post('/api/bwalletx/verify', { identityKey, nonce, signature, ticket: takeTicket(nonce) });
+        v = await post('/api/bwalletx/verify', { identityKey, nonce, signature });
       } else {
         // An older bWalletX paired without signing: ask for the sign-in now (its own sheet in bWalletX).
         show(`<h3>Approve in bWalletX</h3><p>Approve the sign-in in bWalletX, then come back to this page. It shares your public identity key and moves no money.</p>`);
-        const s = await C.signInWithBwalletX({ wallet: r.wallet, challenge: (identityKey) => postT('/api/bwalletx/challenge', { identityKey }) });
-        v = await postT('/api/bwalletx/verify', { identityKey: s.identityKey, nonce: s.nonce, signature: s.signature });
+        const s = await C.signInWithBwalletX({ wallet: r.wallet, challenge: (identityKey) => post('/api/bwalletx/challenge', { identityKey }) });
+        v = await post('/api/bwalletx/verify', { identityKey: s.identityKey, nonce: s.nonce, signature: s.signature });
       }
       signedInAs(v.identityKey, true);
       return true;

@@ -1,8 +1,7 @@
 // Dashboard logic: who is signed in, which names they own, and the rollback guard. Pure where possible.
 import { readFileSync } from 'node:fs';
-import { readCookie, verifySession } from '@bwalletx/connect/server';
 import { NAME_RE, OUTPOINT_RE, PUBKEY_RE } from './_registry.js';
-import { secret } from './bwalletx/_auth.js';
+import { readSession, secret } from './bwalletx/_auth.js';
 
 export const MOCK_KEY = '0266c15007dfb8c02f90b41abe671d207db317ab3974c1dc012705afc857917c83';
 
@@ -24,7 +23,8 @@ export async function sessionKey(req) {
   if (mockAllowed(req)) return MOCK_KEY;
   const s = secret();
   if (!s) return null;
-  const p = await verifySession(readCookie(req.headers?.cookie, 'bwx_session'), { secret: s }).catch(() => null);
+  // __Host-bwx_session, or the old bwx_session until /api/bwalletx/session reissues it
+  const p = (await readSession(req.headers?.cookie, s).catch(() => null))?.payload;
   return p?.sub && PUBKEY_RE.test(p.sub) ? p.sub : null;
 }
 

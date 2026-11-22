@@ -53,7 +53,7 @@ function resumeDraft() {
 /* ---------- the legacy Connect bWalletX scripts (Projects still signs in with them) ---------- */
 function loadWalletScripts() {
   const CONNECT = ['https://unpkg.com/@bwalletx/connect@0.9.0/dist/bwalletx-connect.global.js', 'sha384-ljVpAVRFkV0Eog6yjxI9c5nJKl0Ri9p77SuIPOohuhh6O1SygKqR1cprJ7kJfrK5'];
-  for (const [src, sri] of [CONNECT, ['https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'], ['/bwx.js']]) {
+  for (const [src, sri] of [CONNECT, ['https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js', 'sha384-mZT2gIty7ZDdOGkxfP6joZcYdMW1Jvj9dRlfpTmaJAKKXTqzygtB22k7FLe+KZC1'], ['/bwx.js']]) {
     const s = document.createElement('script'); s.src = src; s.async = false;
     if (sri) { s.integrity = sri; s.crossOrigin = 'anonymous'; }
     document.body.appendChild(s);
