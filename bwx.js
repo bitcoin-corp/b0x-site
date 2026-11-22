@@ -4,7 +4,13 @@
    0.7.0: on a computer (not a phone, not in a frame) the connect sheet also offers "Use Metanet Desktop or another
    BRC-100 wallet", which calls localhost:3321 only after its own tap. The gold button never picks it. A returning
    Metanet visitor gets one silent sign-in per page load, only for a key already known here; "Not you?" and
-   Disconnect forget it and end the session (POST /api/bwalletx/session is the logout). */
+   Disconnect forget it and end the session (POST /api/bwalletx/session is the logout).
+   0.9.0: on a phone the sheet says "Open bWalletX" (no QR to scan on the same phone). The challenge is fetched first and
+   folded into the pairing link, so bWalletX shows one "Connect and sign in" card, then sends the user back to the
+   site ROOT with a #bwx=… fragment (often in a new tab). Connect strips that fragment as soon as it loads, so it must
+   load before every other script; this file then finishes the sign-in there (resumeReturnedPairing). The /verify
+   ticket for that challenge is kept in localStorage under its nonce, because the return tab is not the tab that
+   fetched it. */
 (() => {
   const C = window.bWalletXConnect;
   const slots = [...document.querySelectorAll('[data-bwx]')];
@@ -84,12 +90,30 @@
     return j;
   };
   const routes = { challengeUrl: '/api/bwalletx/challenge', verifyUrl: '/api/bwalletx/verify', post: postT };
+  // 0.9.0 phone return: the tab bWalletX opens needs the ticket of the challenge folded into the pairing link.
+  // Kept under its nonce for at most 10 minutes (the challenge itself expires in 2), taken once.
+  const TK = 'b0x:bwx-ticket:';
+  const ls = (() => { try { return window.localStorage; } catch { return null; } })();
+  const pruneTickets = () => { try {
+    for (let i = ls.length - 1; i >= 0; i--) {
+      const k = ls.key(i);
+      if (k && k.startsWith(TK)) { const v = JSON.parse(ls.getItem(k) || '{}'); if (!(Date.now() - v.at < 600000)) ls.removeItem(k); }
+    }
+  } catch {} };
+  const keepTicket = (nonce, t) => { try { pruneTickets(); ls.setItem(TK + nonce, JSON.stringify({ t, at: Date.now() })); } catch {} };
+  const takeTicket = (nonce) => { try { const v = JSON.parse(ls.getItem(TK + nonce) || 'null'); ls.removeItem(TK + nonce); return v && v.t; } catch { return null; } };
   const logout = () => post('/api/bwalletx/session', {}).catch(() => {});
   let pairing = null; // AbortController for a phone pairing that is waiting on the QR
   let modal = null;
   const close = () => { modal?.remove(); modal = null; };
   const cancel = () => { pairing?.abort(); pairing = null; close(); }; // the person closed the sheet
-  const signedInAs = (k) => { key = k; pairing = null; close(); draw(); announce(); if (!document.querySelector('[data-dashboard]')) location.href = '/dashboard'; };
+  const signedInAs = (k, replace = false) => {
+    key = k; pairing = null; close(); draw(); announce();
+    if (!document.querySelector('[data-dashboard]')) { if (replace) location.replace('/dashboard'); else location.href = '/dashboard'; }
+  };
+  // Another tab (the one bWalletX returned to) may have signed in meanwhile: read the session again, no wallet call.
+  const refresh = () => fetch('/api/bwalletx/session' + mockQ, { credentials: 'same-origin' }).then((r) => r.json())
+    .then((j) => { if (j.identityKey && !key) { key = j.identityKey; draw(); announce(); } }).catch(() => {});
   // "Use Metanet Desktop or another BRC-100 wallet": a row in the connect sheet, computers only.
   const mnRow = () => (mnHere() ? `<button class="bwx-mn" type="button" data-mn>${esc(C.METANET_LABEL || 'Use Metanet Desktop or another BRC-100 wallet').replace('BRC-100', 'BRC\u2011100')}<small>${esc(C.METANET_NOTE || 'Metanet Desktop must be running on this computer')}</small></button>` : '');
   const bindMn = (card) => { const m = card.querySelector('[data-mn]'); if (m) m.onclick = connectMetanet; };
@@ -108,12 +132,41 @@
   async function connect() {
     const ac = new AbortController();
     pairing = ac;
+    // 0.9.0, same phone: fetch the challenge first and fold it into the pairing link (one card in bWalletX), and ask
+    // bWalletX to send the user back here (to the site root, which finishes the sign-in: see resume below).
+    const phone = !!C.isTouchDevice?.() && location.protocol === 'https:';
+    let pre = null;
+    if (phone && C.foldableLogin) pre = await postT('/api/bwalletx/challenge', {}).catch(() => null);
+    if (ac.signal.aborted) return;
+    const login = pre ? C.foldableLogin(pre, location.origin) : undefined;
+    if (login) keepTicket(pre.nonce, ticket);
     try {
       const r = await C.signInWithBwalletX({
-        challenge: (identityKey) => postT('/api/bwalletx/challenge', { identityKey }),
+        // The prefetched challenge is used once (its ticket is the current one); any later one is fetched fresh.
+        challenge: (identityKey) => {
+          const c = pre; pre = null;
+          return c && !identityKey ? Promise.resolve(c) : postT('/api/bwalletx/challenge', { identityKey });
+        },
         pairing: {
           signal: ac.signal,
+          ...(phone && { returnTo: location.origin + location.pathname }),
+          ...(login && { login }),
+          onPaired: () => {
+            const el = document.getElementById('bwxCode');
+            if (phone && el) el.textContent = 'Connected. If bWalletX asks you to approve the sign-in, approve it there, then come back to this page.';
+          },
           onLink: (link) => {
+            if (phone) {
+              // Same phone: nothing to scan. The link opens the bWalletX app, which comes back here when done.
+              const card = show(`<h3>Connect bWalletX</h3><p>Open bWalletX, approve, and it brings you back here.</p><p><a class="bwx-btn on" href="${esc(link)}" rel="noopener">Open bWalletX</a></p><p><button class="bwx-x" type="button" data-web style="margin:0;color:#ffd24d">Use web.bwalletx.com instead</button></p><p id="bwxCode" style="margin:12px 0 0"></p>`);
+              card.querySelector('[data-web]').onclick = () => {
+                navigator.clipboard?.writeText(link).catch(() => {});
+                window.open('https://web.bwalletx.com', '_blank', 'noopener');
+                const el = document.getElementById('bwxCode');
+                if (el) el.textContent = 'Link copied. In web.bwalletx.com tap Connect and paste it, then come back here.';
+              };
+              return;
+            }
             let qr = '';
             if (window.qrcode) { const q = window.qrcode(0, 'M'); q.addData(link); q.make(); qr = q.createSvgTag({ cellSize: 4, margin: 0 }); }
             const card = show(`<h3>Connect bWalletX</h3><p>Scan with the bWalletX app on your phone, or paste the link into <a href="https://web.bwalletx.com" target="_blank" rel="noopener" style="color:#ffd24d">web.bwalletx.com</a>.</p><div class="bwx-qr">${qr}</div><div class="bwx-link" title="Click to copy">${esc(link)}</div><p id="bwxCode" style="margin:12px 0 0"></p>${mnRow()}`);
@@ -127,6 +180,8 @@
       signedInAs(v.identityKey);
     } catch (e) {
       if (ac.signal.aborted) return; // closed, or Metanet picked instead: back to the button, no error
+      if (pairing === ac) pairing = null; // finished (with an error): page wake may re-read the session again
+      if (e && e.code === 'RETURNED_IN_ANOTHER_TAB') { pairing = null; close(); refresh(); return; } // signed in over there
       if (e && e.code === 'NOT_FOUND') {
         show(`<h3>No bWalletX found</h3><p>Get the bWalletX extension or app, or use the web wallet.</p><p><a class="bwx-btn on" href="https://bwalletx.com/get">Get bWalletX</a></p>${mnRow()}`);
       } else if (modal) {
@@ -169,7 +224,36 @@
       if (r && r.signedIn && !abandoned) { key = r.identityKey; draw(); announce(); }
     }).catch(() => {});
   };
-  fetch('/api/bwalletx/session' + mockQ, { credentials: 'same-origin' }).then((r) => r.json()).then((j) => { key = j.identityKey || null; draw(); announce(); silent(); }).catch(draw);
+  // 0.9.0: bWalletX sent the user back here (#bwx=ok&rid=…, already stripped by connect) after "Connect and sign in"
+  // on this phone. Finish the pairing this browser saved and post the folded sign-in with its kept ticket.
+  async function resume() {
+    if (!C.hasReturnFragment?.() || !C.resumeReturnedPairing) return false;
+    const r = await C.resumeReturnedPairing().catch(() => null);
+    if (!r || !r.wallet) return false;
+    try {
+      let v;
+      if (r.login) {
+        const { identityKey, nonce, signature } = r.login;
+        v = await post('/api/bwalletx/verify', { identityKey, nonce, signature, ticket: takeTicket(nonce) });
+      } else {
+        // An older bWalletX paired without signing: ask for the sign-in now (its own sheet in bWalletX).
+        show(`<h3>Approve in bWalletX</h3><p>Approve the sign-in in bWalletX, then come back to this page. It shares your public identity key and moves no money.</p>`);
+        const s = await C.signInWithBwalletX({ wallet: r.wallet, challenge: (identityKey) => postT('/api/bwalletx/challenge', { identityKey }) });
+        v = await postT('/api/bwalletx/verify', { identityKey: s.identityKey, nonce: s.nonce, signature: s.signature });
+      }
+      signedInAs(v.identityKey, true);
+      return true;
+    } catch (e) {
+      show(`<h3>Couldn’t sign in</h3><p style="color:#ff8a7a">${esc((e && e.message) || 'Try again.')}</p>`);
+      return false;
+    }
+  }
+  resume().then((done) => {
+    if (done) return;
+    fetch('/api/bwalletx/session' + mockQ, { credentials: 'same-origin' }).then((r) => r.json()).then((j) => { key = j.identityKey || null; draw(); announce(); silent(); }).catch(draw);
+  });
+  // Back from bWalletX (or another tab signed in): pick the session up while signed out and not mid-pairing.
+  C.onPageWake?.(() => { if (!key && !pairing) refresh(); });
   document.querySelectorAll('[data-ea-connect]').forEach((b) => { b.onclick = () => (key ? null : connect()); });
   window.b0xConnect = () => (key ? null : connect());
   draw();
